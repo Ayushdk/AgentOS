@@ -1,0 +1,681 @@
+{
+  "version": "1.0",
+  "dataset_seed": 20261009,
+  "frozen_date": "2026-10-09",
+  "mode": "development",
+  "cases": [
+    {
+      "id": "P01",
+      "category": "policy",
+      "description": "Annual entitlement",
+      "input": {
+        "question": "How many annual leave days do I get?"
+      },
+      "expected": {
+        "citation": "LEAVE-2:entitlement:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P02",
+      "category": "policy",
+      "description": "Sick entitlement",
+      "input": {
+        "question": "What is the sick leave entitlement?"
+      },
+      "expected": {
+        "citation": "LEAVE-2:entitlement:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P03",
+      "category": "policy",
+      "description": "Working week",
+      "input": {
+        "question": "Which days are working days and holidays?"
+      },
+      "expected": {
+        "citation": "LEAVE-2:working-week:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P04",
+      "category": "policy",
+      "description": "Approval boundary",
+      "input": {
+        "question": "Does submitting leave approve it?"
+      },
+      "expected": {
+        "citation": "LEAVE-2:approval:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P05",
+      "category": "policy",
+      "description": "Overlap rule",
+      "input": {
+        "question": "Can my leave overlap another request?"
+      },
+      "expected": {
+        "citation": "LEAVE-2:eligibility:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P06",
+      "category": "policy",
+      "description": "Remote allowance",
+      "input": {
+        "question": "How many days can I work remotely?"
+      },
+      "expected": {
+        "citation": "REMOTE-1:schedule:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P07",
+      "category": "policy",
+      "description": "Remote security",
+      "input": {
+        "question": "What device and VPN do I need for remote access?"
+      },
+      "expected": {
+        "citation": "REMOTE-1:security:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P08",
+      "category": "policy",
+      "description": "Air travel",
+      "input": {
+        "question": "Which cabin can I book for domestic air travel?"
+      },
+      "expected": {
+        "citation": "TRAVEL-1:booking:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P09",
+      "category": "policy",
+      "description": "Hotel cap",
+      "input": {
+        "question": "What is the domestic hotel reimbursement cap?"
+      },
+      "expected": {
+        "citation": "TRAVEL-1:lodging:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P10",
+      "category": "policy",
+      "description": "Meal cap",
+      "input": {
+        "question": "What is the business meal reimbursement cap?"
+      },
+      "expected": {
+        "citation": "REIMBURSE-1:meals:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P11",
+      "category": "policy",
+      "description": "Receipt deadline",
+      "input": {
+        "question": "When should I submit itemized expense receipts?"
+      },
+      "expected": {
+        "citation": "REIMBURSE-1:receipts:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P12",
+      "category": "policy",
+      "description": "First day",
+      "input": {
+        "question": "What happens on my first day of onboarding?"
+      },
+      "expected": {
+        "citation": "ONBOARD-1:first-day:0"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ]
+    },
+    {
+      "id": "P13",
+      "category": "policy",
+      "description": "Missing broadband reimbursement rule",
+      "input": {
+        "question": "Can I claim home broadband reimbursement?"
+      },
+      "expected": {
+        "handoff": "unsupported_exception"
+      },
+      "tags": [
+        "handoff"
+      ]
+    },
+    {
+      "id": "P14",
+      "category": "policy",
+      "description": "Superseded version excluded",
+      "input": {
+        "question": "Annual leave entitlement"
+      },
+      "expected": {
+        "excluded": "LEAVE-1"
+      },
+      "tags": [
+        "citation"
+      ]
+    },
+    {
+      "id": "P15",
+      "category": "policy",
+      "description": "Contradictory fixture escalates",
+      "input": {
+        "question": "How many days can employees work remotely?",
+        "fixtures": true
+      },
+      "expected": {
+        "handoff": "conflicting_policies"
+      },
+      "tags": [
+        "handoff"
+      ]
+    },
+    {
+      "id": "W01",
+      "category": "workflow",
+      "description": "Four working days with company holiday",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W02",
+      "category": "workflow",
+      "description": "Weekend-only range rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W03",
+      "category": "workflow",
+      "description": "Reversed dates rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W04",
+      "category": "workflow",
+      "description": "Past dates rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W05",
+      "category": "workflow",
+      "description": "Insufficient balance rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W06",
+      "category": "workflow",
+      "description": "Existing pending overlap rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W07",
+      "category": "workflow",
+      "description": "Draft does not submit or debit",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W08",
+      "category": "workflow",
+      "description": "Submission requires exact confirmation",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W09",
+      "category": "workflow",
+      "description": "Confirmation creates pending, not approved",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W10",
+      "category": "workflow",
+      "description": "Direct manager separately approves",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W11",
+      "category": "workflow",
+      "description": "Manager rejection releases reservation",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W12",
+      "category": "workflow",
+      "description": "Cancellation prevents submission",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W13",
+      "category": "workflow",
+      "description": "Expired confirmation rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W14",
+      "category": "workflow",
+      "description": "Changed draft invalidates approval",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "W15",
+      "category": "workflow",
+      "description": "Calendar conflict is visible and unchanged",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "A01",
+      "category": "analytics",
+      "description": "Headcount matches employee records",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A02",
+      "category": "analytics",
+      "description": "Joiners match inclusive period",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A03",
+      "category": "analytics",
+      "description": "Joining trend totals are correct",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A04",
+      "category": "analytics",
+      "description": "Approved leave uses actual working days",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A05",
+      "category": "analytics",
+      "description": "Earlier as-of date excludes future joiners",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A06",
+      "category": "analytics",
+      "description": "Empty future joining period",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A07",
+      "category": "analytics",
+      "description": "Single-day joining period",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A08",
+      "category": "analytics",
+      "description": "Generated allowed SQL returns correct rows",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A09",
+      "category": "analytics",
+      "description": "Cross-month approved leave allocation",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "A10",
+      "category": "analytics",
+      "description": "Chart labels, values, units use returned rows",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "id": "S01",
+      "category": "permissions",
+      "description": "Employee cannot query HR reports through tool",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S02",
+      "category": "permissions",
+      "description": "Manager cannot approve non-report",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S03",
+      "category": "permissions",
+      "description": "Other employee cannot confirm approval",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S04",
+      "category": "permissions",
+      "description": "Forged MCP context is rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S05",
+      "category": "permissions",
+      "description": "Concurrent MCP users keep separate identities",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S06",
+      "category": "permissions",
+      "description": "SQL malicious syntax and functions rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S07",
+      "category": "permissions",
+      "description": "Prompt injection cannot submit or elevate",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S08",
+      "category": "permissions",
+      "description": "API blocks forged role and foreign resume",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S09",
+      "category": "permissions",
+      "description": "Forged and expired citations rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "S10",
+      "category": "permissions",
+      "description": "Reporting DB role cannot read operational tables or write",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "R01",
+      "category": "recovery",
+      "description": "Duplicate submission yields one request",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R02",
+      "category": "recovery",
+      "description": "Concurrent submissions do not double reserve",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R03",
+      "category": "recovery",
+      "description": "Concurrent approvals do not overspend",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R04",
+      "category": "recovery",
+      "description": "Checkpoint survives saver restart",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R05",
+      "category": "recovery",
+      "description": "Duplicate handoff creates one ticket",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R06",
+      "category": "recovery",
+      "description": "Transport read retries are bounded",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R07",
+      "category": "recovery",
+      "description": "Transport write is never blindly retried",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R08",
+      "category": "recovery",
+      "description": "Gemini quota failure gives typed safe error",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R09",
+      "category": "recovery",
+      "description": "MCP unauthorized write without confirmation rejected",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    },
+    {
+      "id": "R10",
+      "category": "recovery",
+      "description": "API workflow confirmation and cancellation survive restart",
+      "input": {},
+      "expected": {},
+      "tags": [
+        "recovery"
+      ]
+    }
+  ]
+}

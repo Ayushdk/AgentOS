@@ -1,0 +1,32 @@
+{
+  "platform": "Windows local",
+  "processes": [
+    {
+      "pid": 2088,
+      "component": "FastAPI + LangGraph",
+      "rss_mb": 4.25,
+      "peak_mb": 4.3
+    },
+    {
+      "pid": 23496,
+      "component": "FastAPI + LangGraph",
+      "rss_mb": 137.04,
+      "peak_mb": 140.79
+    },
+    {
+      "pid": 28192,
+      "component": "MCP tools + embeddings",
+      "rss_mb": 4.18,
+      "peak_mb": 4.23
+    },
+    {
+      "pid": 34892,
+      "component": "MCP tools + embeddings",
+      "rss_mb": 245.71,
+      "peak_mb": 278.95
+    }
+  ],
+  "total_rss_mb": 391.18,
+  "target_host_verified": false,
+  "note": "Measured after actual tool calls. Render/Linux memory, cold start, and hosting eligibility still require a deployment smoke test."
+}

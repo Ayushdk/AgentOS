@@ -1,0 +1,953 @@
+{
+  "mode": "deterministic-development; real PostgreSQL and MCP; explicitly injected recovery faults",
+  "dataset_seed": 20261009,
+  "dataset": "evaluation/final.json",
+  "test_date": "2026-10-10T00:25:41.898782+05:30",
+  "run_count": 1,
+  "model": "development-rules-v1",
+  "model_calls": 0,
+  "token_usage": null,
+  "live_model_verified": false,
+  "summary": {
+    "total": 60,
+    "passed": 60,
+    "failed": 0,
+    "case_success_rate": 1.0,
+    "policy_cases_passed": 15,
+    "analytics_cases_passed": 10,
+    "unauthorized_access_actions_observed": 0,
+    "duplicate_submissions_observed": 0,
+    "median_warm_latency_ms": 34.47,
+    "p95_warm_latency_ms": 2103.98,
+    "cold_start_cases": [
+      {
+        "id": "P01",
+        "latency_ms": 804.75
+      }
+    ]
+  },
+  "limitations": "Deterministic service, API, MCP, and checkpoint scenarios; not 60 live-model end-to-end trials. Extractive citation support is checked by source containment, not independent human review. Synthetic data only. Latencies mix scenario complexity, with cold embedding initialization separated.",
+  "cases": [
+    {
+      "id": "P01",
+      "category": "policy",
+      "description": "Annual entitlement",
+      "passed": true,
+      "cold_start": true,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "LEAVE-2:entitlement:0",
+          "LEAVE-2:eligibility:0",
+          "LEAVE-2:working-week:0",
+          "REMOTE-1:schedule:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 804.75
+    },
+    {
+      "id": "P02",
+      "category": "policy",
+      "description": "Sick entitlement",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "LEAVE-2:entitlement:0",
+          "LEAVE-2:eligibility:0",
+          "LEAVE-2:working-week:0",
+          "TRAVEL-1:lodging:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 13.24
+    },
+    {
+      "id": "P03",
+      "category": "policy",
+      "description": "Working week",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "LEAVE-2:working-week:0",
+          "LEAVE-2:eligibility:0",
+          "LEAVE-2:entitlement:0",
+          "TRAVEL-1:advance:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 15.9
+    },
+    {
+      "id": "P04",
+      "category": "policy",
+      "description": "Approval boundary",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "LEAVE-2:approval:0",
+          "LEAVE-2:eligibility:0",
+          "LEAVE-2:entitlement:0",
+          "LEAVE-2:working-week:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 14.64
+    },
+    {
+      "id": "P05",
+      "category": "policy",
+      "description": "Overlap rule",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "LEAVE-2:eligibility:0",
+          "LEAVE-2:working-week:0",
+          "LEAVE-2:approval:0",
+          "TRAVEL-1:advance:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 15.22
+    },
+    {
+      "id": "P06",
+      "category": "policy",
+      "description": "Remote allowance",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "REMOTE-1:schedule:0",
+          "REMOTE-1:exceptions:0",
+          "LEAVE-2:entitlement:0",
+          "ONBOARD-1:training:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 14.15
+    },
+    {
+      "id": "P07",
+      "category": "policy",
+      "description": "Remote security",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "REMOTE-1:security:0",
+          "ONBOARD-1:equipment:0",
+          "REMOTE-1:exceptions:0",
+          "REIMBURSE-1:unknown:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 13.24
+    },
+    {
+      "id": "P08",
+      "category": "policy",
+      "description": "Air travel",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "TRAVEL-1:booking:0",
+          "TRAVEL-1:advance:0",
+          "TRAVEL-1:lodging:0",
+          "REMOTE-1:security:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 11.71
+    },
+    {
+      "id": "P09",
+      "category": "policy",
+      "description": "Hotel cap",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "TRAVEL-1:lodging:0",
+          "REIMBURSE-1:meals:0",
+          "REIMBURSE-1:unknown:0",
+          "TRAVEL-1:booking:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 13.03
+    },
+    {
+      "id": "P10",
+      "category": "policy",
+      "description": "Meal cap",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "REIMBURSE-1:meals:0",
+          "TRAVEL-1:lodging:0",
+          "REIMBURSE-1:unknown:0",
+          "REIMBURSE-1:receipts:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 13.94
+    },
+    {
+      "id": "P11",
+      "category": "policy",
+      "description": "Receipt deadline",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "REIMBURSE-1:receipts:0",
+          "TRAVEL-1:lodging:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 16.54
+    },
+    {
+      "id": "P12",
+      "category": "policy",
+      "description": "First day",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "ONBOARD-1:first-day:0",
+          "LEAVE-2:working-week:0",
+          "REIMBURSE-1:meals:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 14.32
+    },
+    {
+      "id": "P13",
+      "category": "policy",
+      "description": "Missing broadband reimbursement rule",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "REIMBURSE-1:unknown:0",
+          "TRAVEL-1:lodging:0"
+        ],
+        "handoff_reason": "unsupported_exception"
+      },
+      "latency_ms": 13.92
+    },
+    {
+      "id": "P14",
+      "category": "policy",
+      "description": "Superseded version excluded",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "LEAVE-2:entitlement:0",
+          "LEAVE-2:eligibility:0",
+          "LEAVE-2:working-week:0"
+        ],
+        "handoff_reason": null
+      },
+      "latency_ms": 14.81
+    },
+    {
+      "id": "P15",
+      "category": "policy",
+      "description": "Contradictory fixture escalates",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "retrieval_mode": "hybrid_json_cosine_fallback",
+        "citation_ids": [
+          "REMOTE-1:schedule:0",
+          "REMOTE-CONFLICT:schedule:0",
+          "REMOTE-1:exceptions:0",
+          "LEAVE-2:entitlement:0"
+        ],
+        "handoff_reason": "conflicting_policies"
+      },
+      "latency_ms": 15.19
+    },
+    {
+      "id": "W01",
+      "category": "workflow",
+      "description": "Four working days with company holiday",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 25.91
+    },
+    {
+      "id": "W02",
+      "category": "workflow",
+      "description": "Weekend-only range rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 39.47
+    },
+    {
+      "id": "W03",
+      "category": "workflow",
+      "description": "Reversed dates rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 33.74
+    },
+    {
+      "id": "W04",
+      "category": "workflow",
+      "description": "Past dates rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 38.17
+    },
+    {
+      "id": "W05",
+      "category": "workflow",
+      "description": "Insufficient balance rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 38.28
+    },
+    {
+      "id": "W06",
+      "category": "workflow",
+      "description": "Existing pending overlap rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 38.41
+    },
+    {
+      "id": "W07",
+      "category": "workflow",
+      "description": "Draft does not submit or debit",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 62.67
+    },
+    {
+      "id": "W08",
+      "category": "workflow",
+      "description": "Submission requires exact confirmation",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 48.24
+    },
+    {
+      "id": "W09",
+      "category": "workflow",
+      "description": "Confirmation creates pending, not approved",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 66.3
+    },
+    {
+      "id": "W10",
+      "category": "workflow",
+      "description": "Direct manager separately approves",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 71.81
+    },
+    {
+      "id": "W11",
+      "category": "workflow",
+      "description": "Manager rejection releases reservation",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 57.27
+    },
+    {
+      "id": "W12",
+      "category": "workflow",
+      "description": "Cancellation prevents submission",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 52.03
+    },
+    {
+      "id": "W13",
+      "category": "workflow",
+      "description": "Expired confirmation rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 40.74
+    },
+    {
+      "id": "W14",
+      "category": "workflow",
+      "description": "Changed draft invalidates approval",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 42.1
+    },
+    {
+      "id": "W15",
+      "category": "workflow",
+      "description": "Calendar conflict is visible and unchanged",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 50.84
+    },
+    {
+      "id": "A01",
+      "category": "analytics",
+      "description": "Headcount matches employee records",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "headcount",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 9
+          },
+          {
+            "department": "Finance",
+            "value": 9
+          },
+          {
+            "department": "Operations",
+            "value": 9
+          },
+          {
+            "department": "People",
+            "value": 10
+          },
+          {
+            "department": "Product",
+            "value": 10
+          }
+        ]
+      },
+      "latency_ms": 78.67
+    },
+    {
+      "id": "A02",
+      "category": "analytics",
+      "description": "Joiners match inclusive period",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "joiners",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 3
+          },
+          {
+            "department": "Finance",
+            "value": 3
+          },
+          {
+            "department": "Operations",
+            "value": 3
+          },
+          {
+            "department": "People",
+            "value": 4
+          },
+          {
+            "department": "Product",
+            "value": 4
+          }
+        ]
+      },
+      "latency_ms": 27.42
+    },
+    {
+      "id": "A03",
+      "category": "analytics",
+      "description": "Joining trend totals are correct",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "joining_trends",
+        "rows": [
+          {
+            "month": "2026-03",
+            "value": 5
+          },
+          {
+            "month": "2026-06",
+            "value": 6
+          },
+          {
+            "month": "2026-09",
+            "value": 6
+          }
+        ]
+      },
+      "latency_ms": 27.93
+    },
+    {
+      "id": "A04",
+      "category": "analytics",
+      "description": "Approved leave uses actual working days",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "approved_leave",
+        "rows": [
+          {
+            "month": "2026-06",
+            "value": 2
+          },
+          {
+            "month": "2026-07",
+            "value": 1
+          },
+          {
+            "month": "2026-08",
+            "value": 2
+          },
+          {
+            "month": "2026-09",
+            "value": 2
+          }
+        ]
+      },
+      "latency_ms": 32.43
+    },
+    {
+      "id": "A05",
+      "category": "analytics",
+      "description": "Earlier as-of date excludes future joiners",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "headcount",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 7
+          },
+          {
+            "department": "Finance",
+            "value": 7
+          },
+          {
+            "department": "Operations",
+            "value": 7
+          },
+          {
+            "department": "People",
+            "value": 6
+          },
+          {
+            "department": "Product",
+            "value": 6
+          }
+        ]
+      },
+      "latency_ms": 24.77
+    },
+    {
+      "id": "A06",
+      "category": "analytics",
+      "description": "Empty future joining period",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "joiners",
+        "rows": []
+      },
+      "latency_ms": 25.54
+    },
+    {
+      "id": "A07",
+      "category": "analytics",
+      "description": "Single-day joining period",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "joiners",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 1
+          }
+        ]
+      },
+      "latency_ms": 28.27
+    },
+    {
+      "id": "A08",
+      "category": "analytics",
+      "description": "Generated allowed SQL returns correct rows",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "headcount",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 9
+          },
+          {
+            "department": "Finance",
+            "value": 9
+          },
+          {
+            "department": "Operations",
+            "value": 9
+          },
+          {
+            "department": "People",
+            "value": 10
+          },
+          {
+            "department": "Product",
+            "value": 10
+          }
+        ]
+      },
+      "latency_ms": 31.15
+    },
+    {
+      "id": "A09",
+      "category": "analytics",
+      "description": "Cross-month approved leave allocation",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "approved_leave",
+        "rows": [
+          {
+            "month": "2026-10",
+            "value": 1
+          },
+          {
+            "month": "2026-11",
+            "value": 1
+          }
+        ]
+      },
+      "latency_ms": 30.09
+    },
+    {
+      "id": "A10",
+      "category": "analytics",
+      "description": "Chart labels, values, units use returned rows",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "report": "headcount",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 9
+          },
+          {
+            "department": "Finance",
+            "value": 9
+          },
+          {
+            "department": "Operations",
+            "value": 9
+          },
+          {
+            "department": "People",
+            "value": 10
+          },
+          {
+            "department": "Product",
+            "value": 10
+          }
+        ]
+      },
+      "latency_ms": 29.42
+    },
+    {
+      "id": "S01",
+      "category": "permissions",
+      "description": "Employee cannot query HR reports through tool",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 2103.98
+    },
+    {
+      "id": "S02",
+      "category": "permissions",
+      "description": "Manager cannot approve non-report",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 46.42
+    },
+    {
+      "id": "S03",
+      "category": "permissions",
+      "description": "Other employee cannot confirm approval",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 31.55
+    },
+    {
+      "id": "S04",
+      "category": "permissions",
+      "description": "Forged MCP context is rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 1597.78
+    },
+    {
+      "id": "S05",
+      "category": "permissions",
+      "description": "Concurrent MCP users keep separate identities",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 1804.84
+    },
+    {
+      "id": "S06",
+      "category": "permissions",
+      "description": "SQL malicious syntax and functions rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 34.47
+    },
+    {
+      "id": "S07",
+      "category": "permissions",
+      "description": "Prompt injection cannot submit or elevate",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 44.17
+    },
+    {
+      "id": "S08",
+      "category": "permissions",
+      "description": "API blocks forged role and foreign resume",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 1734.4
+    },
+    {
+      "id": "S09",
+      "category": "permissions",
+      "description": "Forged and expired citations rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 30.92
+    },
+    {
+      "id": "S10",
+      "category": "permissions",
+      "description": "Reporting DB role cannot read operational tables or write",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 30.54
+    },
+    {
+      "id": "R01",
+      "category": "recovery",
+      "description": "Duplicate submission yields one request",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 57.63
+    },
+    {
+      "id": "R02",
+      "category": "recovery",
+      "description": "Concurrent submissions do not double reserve",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 97.24
+    },
+    {
+      "id": "R03",
+      "category": "recovery",
+      "description": "Concurrent approvals do not overspend",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 86.59
+    },
+    {
+      "id": "R04",
+      "category": "recovery",
+      "description": "Checkpoint survives saver restart",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 2116.44
+    },
+    {
+      "id": "R05",
+      "category": "recovery",
+      "description": "Duplicate handoff creates one ticket",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 60.15
+    },
+    {
+      "id": "R06",
+      "category": "recovery",
+      "description": "Transport read retries are bounded",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "fault_injected": "transport OSError",
+        "attempts": 2
+      },
+      "latency_ms": 233.66
+    },
+    {
+      "id": "R07",
+      "category": "recovery",
+      "description": "Transport write is never blindly retried",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "fault_injected": "transport OSError",
+        "attempts": 1
+      },
+      "latency_ms": 26.21
+    },
+    {
+      "id": "R08",
+      "category": "recovery",
+      "description": "Gemini quota failure gives typed safe error",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "fault_injected": "Gemini 429",
+        "live_inference": false
+      },
+      "latency_ms": 612.14
+    },
+    {
+      "id": "R09",
+      "category": "recovery",
+      "description": "MCP unauthorized write without confirmation rejected",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 1831.94
+    },
+    {
+      "id": "R10",
+      "category": "recovery",
+      "description": "API workflow confirmation and cancellation survive restart",
+      "passed": true,
+      "cold_start": false,
+      "evidence": {
+        "checks": "passed"
+      },
+      "latency_ms": 3546.83
+    }
+  ]
+}

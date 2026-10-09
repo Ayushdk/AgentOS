@@ -1,0 +1,9 @@
+{
+  "two_distinct_processes": true,
+  "prepare_pid": 34312,
+  "resume_pid": 23600,
+  "checkpoint": "PostgreSQL",
+  "status": "pending",
+  "duplicate_prevented": true,
+  "mode": "development"
+}

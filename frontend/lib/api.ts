@@ -1,0 +1,14 @@
+export const API=process.env.NEXT_PUBLIC_API_URL||'http://localhost:8000';
+let bearer:string|null=null;
+export function setBearer(token:string|null){bearer=token;}
+export async function api<T=any>(path:string,body?:unknown):Promise<T>{
+ const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),95000);
+ try {const response=await fetch(API+path,{method:body===undefined?'GET':'POST',credentials:'include',headers:{'Content-Type':'application/json','X-AgentOS-Request':'1',...(bearer?{Authorization:'Bearer '+bearer}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:controller.signal});
+ const data=await response.json();if(!response.ok)throw new Error(data.error?.message||data.detail?.[0]?.msg||'The request could not be completed.');return data;
+ }catch(e){if(e instanceof Error&&e.name==='AbortError')throw new Error('The server is taking longer than expected. Refresh history before retrying; your workflow is saved.');throw e;}finally{clearTimeout(timer);}
+}
+export type Identity={tenant_id:string;employee_id:string;role:'employee'|'manager'|'hr';name:string;demo?:boolean};
+export type Citation={id:string;document_id:string;title:string;version:string;effective_date:string;section_id:string;heading:string;excerpt:string};
+export type Run={id:string;question:string;status:string;mode:string;specialist:string;result:any;created_at:string;latency_ms:number;model_calls:number};
+export type Leave={id:string;start_date:string;end_date:string;leave_type:string;days:number;status:string;employee_id:string;employee_name?:string};
+export type Report={rows:Record<string,string|number>[];chart:{type:'bar';x:string;y:string;unit:string};report:string;period:{start:string;end:string};definition:string;total:number;query:string};

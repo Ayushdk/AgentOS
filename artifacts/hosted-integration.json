@@ -1,0 +1,55 @@
+{
+  "database": "Supabase PostgreSQL",
+  "authentication_tested": false,
+  "model_mode": "development",
+  "ingestion": {
+    "chunks": 19,
+    "embeddings": true,
+    "vector_storage": "pgvector"
+  },
+  "mcp_transport": "stdio",
+  "discovered_tools": [
+    "calculate_working_days",
+    "create_hr_ticket",
+    "get_my_calendar_events",
+    "get_my_leave_balance",
+    "prepare_leave_request",
+    "query_hr_analytics",
+    "review_leave_request",
+    "search_policies",
+    "submit_leave_request"
+  ],
+  "citation_ids": [
+    "LEAVE-2:entitlement:0",
+    "LEAVE-2:eligibility:0",
+    "LEAVE-2:working-week:0",
+    "REMOTE-1:schedule:0"
+  ],
+  "retrieval_mode": "hybrid_pgvector_fts",
+  "checkpoint_reconnected": true,
+  "employee_confirmation": "pending",
+  "manager_review": "approved",
+  "approved_days": 4,
+  "headcount_rows": [
+    {
+      "department": "Engineering",
+      "value": 9
+    },
+    {
+      "department": "Finance",
+      "value": 9
+    },
+    {
+      "department": "Operations",
+      "value": 9
+    },
+    {
+      "department": "People",
+      "value": 10
+    },
+    {
+      "department": "Product",
+      "value": 10
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "provider_accessible": true,
+  "anonymous_flags": {},
+  "external_anonymous": false,
+  "jwks_key_count": 1,
+  "jwks_algorithms": [
+    "ES256"
+  ]
+}

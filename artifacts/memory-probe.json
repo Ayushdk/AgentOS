@@ -1,0 +1,10 @@
+{
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "dimensions": 384,
+  "before_rss_mb": 65.46,
+  "loaded_rss_mb": 208.65,
+  "load_seconds": 0.802,
+  "threads": 2,
+  "provider": "CPUExecutionProvider",
+  "free_backend_compatibility": "Not established; measure full backend plus MCP child on target host."
+}

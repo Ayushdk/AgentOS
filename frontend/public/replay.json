@@ -1,0 +1,38 @@
+{
+  "mode": "recorded_replay",
+  "live_execution": false,
+  "captured_from": "verified Playwright development-mode journeys",
+  "steps": [
+    {
+      "title": "A policy answer with a real source",
+      "description": "The employee asks about annual leave. The backend resolves a current policy section and returns its stable citation ID.",
+      "image": "/replay/02-source.png",
+      "evidence": {"citation": "LEAVE-2:entitlement:0", "version": "2.0", "mode": "hybrid retrieval"}
+    },
+    {
+      "title": "Employee confirmation before submission",
+      "description": "The leave draft excludes Meridian Foundation Day, surfaces a simulated calendar conflict, and waits for employee confirmation.",
+      "image": "/replay/03-confirmation.png",
+      "evidence": {"working_days": 4, "holiday_excluded": true, "business_write": false}
+    },
+    {
+      "title": "A separate manager decision",
+      "description": "After employee submission, the direct manager sees a pending request and makes a separate authorized decision.",
+      "image": "/replay/04-manager.png",
+      "evidence": {"state_before": "pending", "approval_actor": "direct manager", "balance_revalidated": true}
+    },
+    {
+      "title": "A confirmed human handoff",
+      "description": "The missing broadband rule becomes a persisted HR ticket only after the employee confirms forwarding the question and evidence.",
+      "image": "/replay/05-handoff.png",
+      "evidence": {"reason": "unsupported_exception", "persisted": true}
+    },
+    {
+      "title": "Aggregate HR analytics",
+      "description": "The HR view renders a chart from returned aggregate rows and shows the reporting period and metric definition.",
+      "image": "/replay/06-analytics.png",
+      "evidence": {"view": "reporting.headcount", "individual_reasons": false, "row_limit": 100}
+    }
+  ]
+}
+

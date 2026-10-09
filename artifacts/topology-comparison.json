@@ -1,0 +1,191 @@
+{
+  "mode": "development",
+  "same_business_results": true,
+  "note": "Single-worker and specialist graphs share deterministic services and tool restrictions. This is not a live-model quality comparison. Single graph ran first and includes cold embedding load.",
+  "runs": [
+    {
+      "topology": "single",
+      "question": "How many annual leave days do I get?",
+      "latency_ms": 944,
+      "model_calls": 0,
+      "result": {
+        "answer": "Annual leave provides 18 working days per calendar year. Sick leave provides 8 working days. Balances are maintained by People Operations. Pending requests reserve available days; approval deducts those days from the remaining balance.\n\nOnly annual and sick leave are supported. Leave cannot overlap pending or approved leave, start in the past, exceed available balance, or span more than 91 calendar days. Requests with no working days are not accepted. Exceptions need People Operations review.",
+        "citations": [
+          {
+            "id": "LEAVE-2:entitlement:0",
+            "document_id": "LEAVE-2",
+            "title": "Leave & time away",
+            "version": "2.0",
+            "effective_date": "2026-01-01",
+            "section_id": "entitlement",
+            "heading": "Annual leave entitlement",
+            "excerpt": "Annual leave provides 18 working days per calendar year. Sick leave provides 8 working days. Balances are maintained by People Operations. Pending requests reserve available days; approval deducts those days from the remaining balance."
+          },
+          {
+            "id": "LEAVE-2:eligibility:0",
+            "document_id": "LEAVE-2",
+            "title": "Leave & time away",
+            "version": "2.0",
+            "effective_date": "2026-01-01",
+            "section_id": "eligibility",
+            "heading": "Validation and availability",
+            "excerpt": "Only annual and sick leave are supported. Leave cannot overlap pending or approved leave, start in the past, exceed available balance, or span more than 91 calendar days. Requests with no working days are not accepted. Exceptions need People Operations review."
+          },
+          {
+            "id": "LEAVE-2:working-week:0",
+            "document_id": "LEAVE-2",
+            "title": "Leave & time away",
+            "version": "2.0",
+            "effective_date": "2026-01-01",
+            "section_id": "working-week",
+            "heading": "Working days and holidays",
+            "excerpt": "The working week is Monday through Friday in Asia/Kolkata. Weekends and company holidays do not use leave. Meridian Foundation Day is November 18, 2026. A November 16\u201320, 2026 request uses four working days."
+          },
+          {
+            "id": "REMOTE-1:schedule:0",
+            "document_id": "REMOTE-1",
+            "title": "Remote work",
+            "version": "1.0",
+            "effective_date": "2026-01-01",
+            "section_id": "schedule",
+            "heading": "Hybrid schedule",
+            "excerpt": "Eligible employees may work remotely up to two days per week with manager agreement. Teams choose office days together."
+          }
+        ]
+      }
+    },
+    {
+      "topology": "single",
+      "question": "Check leave November 16\u201320, 2026",
+      "latency_ms": 104,
+      "model_calls": 0,
+      "result": {
+        "days": 4,
+        "status": "draft"
+      }
+    },
+    {
+      "topology": "single",
+      "question": "Show headcount by department",
+      "latency_ms": 78,
+      "model_calls": 0,
+      "result": {
+        "answer": "Returned 5 aggregate groups for the selected period. Total: 47 employees.",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 9
+          },
+          {
+            "department": "Finance",
+            "value": 9
+          },
+          {
+            "department": "Operations",
+            "value": 9
+          },
+          {
+            "department": "People",
+            "value": 10
+          },
+          {
+            "department": "Product",
+            "value": 10
+          }
+        ]
+      }
+    },
+    {
+      "topology": "specialists",
+      "question": "How many annual leave days do I get?",
+      "latency_ms": 44,
+      "model_calls": 0,
+      "result": {
+        "answer": "Annual leave provides 18 working days per calendar year. Sick leave provides 8 working days. Balances are maintained by People Operations. Pending requests reserve available days; approval deducts those days from the remaining balance.\n\nOnly annual and sick leave are supported. Leave cannot overlap pending or approved leave, start in the past, exceed available balance, or span more than 91 calendar days. Requests with no working days are not accepted. Exceptions need People Operations review.",
+        "citations": [
+          {
+            "id": "LEAVE-2:entitlement:0",
+            "document_id": "LEAVE-2",
+            "title": "Leave & time away",
+            "version": "2.0",
+            "effective_date": "2026-01-01",
+            "section_id": "entitlement",
+            "heading": "Annual leave entitlement",
+            "excerpt": "Annual leave provides 18 working days per calendar year. Sick leave provides 8 working days. Balances are maintained by People Operations. Pending requests reserve available days; approval deducts those days from the remaining balance."
+          },
+          {
+            "id": "LEAVE-2:eligibility:0",
+            "document_id": "LEAVE-2",
+            "title": "Leave & time away",
+            "version": "2.0",
+            "effective_date": "2026-01-01",
+            "section_id": "eligibility",
+            "heading": "Validation and availability",
+            "excerpt": "Only annual and sick leave are supported. Leave cannot overlap pending or approved leave, start in the past, exceed available balance, or span more than 91 calendar days. Requests with no working days are not accepted. Exceptions need People Operations review."
+          },
+          {
+            "id": "LEAVE-2:working-week:0",
+            "document_id": "LEAVE-2",
+            "title": "Leave & time away",
+            "version": "2.0",
+            "effective_date": "2026-01-01",
+            "section_id": "working-week",
+            "heading": "Working days and holidays",
+            "excerpt": "The working week is Monday through Friday in Asia/Kolkata. Weekends and company holidays do not use leave. Meridian Foundation Day is November 18, 2026. A November 16\u201320, 2026 request uses four working days."
+          },
+          {
+            "id": "REMOTE-1:schedule:0",
+            "document_id": "REMOTE-1",
+            "title": "Remote work",
+            "version": "1.0",
+            "effective_date": "2026-01-01",
+            "section_id": "schedule",
+            "heading": "Hybrid schedule",
+            "excerpt": "Eligible employees may work remotely up to two days per week with manager agreement. Teams choose office days together."
+          }
+        ]
+      }
+    },
+    {
+      "topology": "specialists",
+      "question": "Check leave November 16\u201320, 2026",
+      "latency_ms": 80,
+      "model_calls": 0,
+      "result": {
+        "days": 4,
+        "status": "draft"
+      }
+    },
+    {
+      "topology": "specialists",
+      "question": "Show headcount by department",
+      "latency_ms": 28,
+      "model_calls": 0,
+      "result": {
+        "answer": "Returned 5 aggregate groups for the selected period. Total: 47 employees.",
+        "rows": [
+          {
+            "department": "Engineering",
+            "value": 9
+          },
+          {
+            "department": "Finance",
+            "value": 9
+          },
+          {
+            "department": "Operations",
+            "value": 9
+          },
+          {
+            "department": "People",
+            "value": 10
+          },
+          {
+            "department": "Product",
+            "value": 10
+          }
+        ]
+      }
+    }
+  ]
+}

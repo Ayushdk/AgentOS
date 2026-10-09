@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: agentos-api
+    runtime: python
+    plan: free
+    buildCommand: pip install uv && uv sync --frozen --no-dev && uv run alembic upgrade head && uv run python -m agentos.retrieval
+    startCommand: uv run uvicorn agentos.api:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: ENVIRONMENT
+        value: hosted
+      - key: AUTH_MODE
+        value: supabase
+      - key: MODEL_MODE
+        value: development
+      - key: DATABASE_URL
+        sync: false
+      - key: ANALYTICS_DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SUPABASE_URL
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      - key: GEMINI_FREE_TIER_VERIFIED
+        value: false
+      - key: ENABLE_PUBLIC_DEMO
+        value: false
+
