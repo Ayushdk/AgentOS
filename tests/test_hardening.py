@@ -42,6 +42,13 @@ def test_personal_leave_phrasing_routes_to_balance():
     assert development_plan("How much leave do I have available?").intent == "balance"
 
 
+def test_employee_without_reporting_manager_cannot_create_orphaned_leave():
+    manager = auth.resolve_identity(seed_tenant(), "E010")
+    with pytest.raises(DomainError) as error:
+        services.prepare_leave_request(manager, "2026-11-16", "2026-11-20", "annual", uid())
+    assert error.value.code == "manager_missing"
+
+
 def test_leave_dates_accept_employee_formats_and_latest_followup_dates():
     short = development_plan("I need emergency leave from 16-10-26 to 21-10-26")
     assert (short.intent, short.start_date, short.end_date) == (

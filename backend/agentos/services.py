@@ -162,6 +162,12 @@ def pack_leave(row):
 def prepare_leave_request(ctx, start_date, end_date, leave_type, idempotency_key):
     start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
     with transaction() as s:
+        employee = s.get(Employee, (ctx.tenant_id, ctx.employee_id))
+        if not employee or not employee.manager_id:
+            raise DomainError(
+                "manager_missing",
+                "No reporting manager is assigned to this employee. Contact People Operations before requesting leave.",
+            )
         # Serialize draft creation as well as balance-changing operations per employee/type.
         b = s.scalar(scope(ctx, Balance).where(Balance.leave_type == leave_type).with_for_update())
         prior = s.scalar(scope(ctx, Leave).where(Leave.idempotency_key == idempotency_key))
