@@ -41,9 +41,12 @@ async def lifespan(app):
 
 
 app = FastAPI(title="AgentOS", version="1.0.0", lifespan=lifespan)
+allowed_origins = {settings().frontend_origin}
+if settings().environment == "local":
+    allowed_origins.update({"http://localhost:3000", "http://127.0.0.1:3000"})
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings().frontend_origin],
+    allow_origins=sorted(allowed_origins),
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization", "X-AgentOS-Request"],
@@ -72,7 +75,7 @@ async def unexpected_error(request, error):
 async def protect_origin(request, call_next):
     if request.method == "POST":
         origin = request.headers.get("origin")
-        if origin and origin != settings().frontend_origin:
+        if origin and origin not in allowed_origins:
             return JSONResponse(
                 {"error": {"code": "origin", "message": "Origin not allowed."}}, status_code=403
             )
