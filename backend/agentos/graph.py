@@ -82,31 +82,12 @@ def build_graph(gateway, checkpointer, topology="specialists"):
 
     async def coordinator(state):
         ctx = Identity(**state["context"])
-        if settings().model_mode == "live":
-            with transaction() as s:
-                run = s.get(AgentRun, state["run_id"])
-                if run.model_calls >= 4:
-                    raise DomainError("quota_exhausted", "This run reached its model-call limit.", 429)
-                run.model_calls += 1
-                audit(s, ctx, "model.attempt", {"model": settings().gemini_model}, state["run_id"])
-        try:
-            plan, meta = await model.plan(state["question"])
-        except DomainError as e:
-            # Model availability must not disable read-only support. The local
-            # planner cannot grant permissions or bypass the normal approval path.
-            plan = development_plan(state["question"])
-            with transaction() as s:
-                audit(
-                    s,
-                    ctx,
-                    "model.routing_fallback",
-                    {"code": e.code, "planner": "development-rules-v1"},
-                    state["run_id"],
-                )
-            meta = {"model": "development-rules-v1", "tokens": {}}
-            model_degraded = True
-        else:
-            model_degraded = False
+        # The supported intents are deliberately small and security-sensitive, so
+        # route them locally and spend the single Gemini call on grounded language.
+        # Tool authorization and approvals remain server-owned in every mode.
+        plan = development_plan(state["question"])
+        meta = {"model": "local-router-v1", "tokens": {}}
+        model_degraded = False
         specialist = (
             "workflow"
             if plan.intent in ("leave", "balance", "calendar")

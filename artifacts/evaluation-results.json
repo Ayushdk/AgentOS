@@ -2,7 +2,7 @@
   "mode": "deterministic-development; real PostgreSQL and MCP; explicitly injected recovery faults",
   "dataset_seed": 20261009,
   "dataset": "evaluation/final.json",
-  "test_date": "2026-10-10T02:01:21.452404+05:30",
+  "test_date": "2026-10-10T02:03:42.376756+05:30",
   "run_count": 1,
   "model": "development-rules-v1",
   "model_calls": 0,
@@ -17,12 +17,12 @@
     "analytics_cases_passed": 10,
     "unauthorized_access_actions_observed": 0,
     "duplicate_submissions_observed": 0,
-    "median_warm_latency_ms": 41.48,
-    "p95_warm_latency_ms": 2540.42,
+    "median_warm_latency_ms": 42.48,
+    "p95_warm_latency_ms": 2562.28,
     "cold_start_cases": [
       {
         "id": "P01",
-        "latency_ms": 908.6
+        "latency_ms": 996.13
       }
     ]
   },
@@ -44,7 +44,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 908.6
+      "latency_ms": 996.13
     },
     {
       "id": "P02",
@@ -62,7 +62,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 17.12
+      "latency_ms": 16.4
     },
     {
       "id": "P03",
@@ -80,7 +80,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 19.92
+      "latency_ms": 16.15
     },
     {
       "id": "P04",
@@ -98,7 +98,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 18.21
+      "latency_ms": 16.76
     },
     {
       "id": "P05",
@@ -116,7 +116,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 16.9
+      "latency_ms": 16.21
     },
     {
       "id": "P06",
@@ -134,7 +134,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 18.65
+      "latency_ms": 16.94
     },
     {
       "id": "P07",
@@ -152,7 +152,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 15.1
+      "latency_ms": 14.68
     },
     {
       "id": "P08",
@@ -170,7 +170,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 17.35
+      "latency_ms": 12.67
     },
     {
       "id": "P09",
@@ -188,7 +188,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 16.91
+      "latency_ms": 13.99
     },
     {
       "id": "P10",
@@ -206,7 +206,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 17.22
+      "latency_ms": 13.77
     },
     {
       "id": "P11",
@@ -222,7 +222,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 13.69
+      "latency_ms": 15.26
     },
     {
       "id": "P12",
@@ -239,7 +239,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 13.57
+      "latency_ms": 13.67
     },
     {
       "id": "P13",
@@ -255,7 +255,7 @@
         ],
         "handoff_reason": "unsupported_exception"
       },
-      "latency_ms": 14.37
+      "latency_ms": 12.68
     },
     {
       "id": "P14",
@@ -272,7 +272,7 @@
         ],
         "handoff_reason": null
       },
-      "latency_ms": 16.53
+      "latency_ms": 14.54
     },
     {
       "id": "P15",
@@ -290,7 +290,7 @@
         ],
         "handoff_reason": "conflicting_policies"
       },
-      "latency_ms": 14.29
+      "latency_ms": 13.95
     },
     {
       "id": "W01",
@@ -301,7 +301,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 34.61
+      "latency_ms": 35.11
     },
     {
       "id": "W02",
@@ -312,7 +312,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 39.75
+      "latency_ms": 38.61
     },
     {
       "id": "W03",
@@ -323,7 +323,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 46.97
+      "latency_ms": 34.82
     },
     {
       "id": "W04",
@@ -334,7 +334,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 34.34
+      "latency_ms": 32.96
     },
     {
       "id": "W05",
@@ -345,7 +345,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 35.4
+      "latency_ms": 39.33
     },
     {
       "id": "W06",
@@ -356,7 +356,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 34.81
+      "latency_ms": 42.48
     },
     {
       "id": "W07",
@@ -367,7 +367,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 62.25
+      "latency_ms": 65.84
     },
     {
       "id": "W08",
@@ -378,7 +378,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 49.42
+      "latency_ms": 58.6
     },
     {
       "id": "W09",
@@ -389,7 +389,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 69.96
+      "latency_ms": 69.1
     },
     {
       "id": "W10",
@@ -400,7 +400,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 91.78
+      "latency_ms": 84.96
     },
     {
       "id": "W11",
@@ -411,7 +411,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 74.85
+      "latency_ms": 74.51
     },
     {
       "id": "W12",
@@ -422,7 +422,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 49.18
+      "latency_ms": 54.85
     },
     {
       "id": "W13",
@@ -433,7 +433,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 45.71
+      "latency_ms": 51.55
     },
     {
       "id": "W14",
@@ -444,7 +444,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 45.94
+      "latency_ms": 48.46
     },
     {
       "id": "W15",
@@ -455,7 +455,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 66.1
+      "latency_ms": 64.1
     },
     {
       "id": "A01",
@@ -488,7 +488,7 @@
           }
         ]
       },
-      "latency_ms": 99.17
+      "latency_ms": 106.71
     },
     {
       "id": "A02",
@@ -521,7 +521,7 @@
           }
         ]
       },
-      "latency_ms": 41.48
+      "latency_ms": 47.06
     },
     {
       "id": "A03",
@@ -546,7 +546,7 @@
           }
         ]
       },
-      "latency_ms": 39.12
+      "latency_ms": 40.74
     },
     {
       "id": "A04",
@@ -575,7 +575,7 @@
           }
         ]
       },
-      "latency_ms": 43.7
+      "latency_ms": 43.72
     },
     {
       "id": "A05",
@@ -608,7 +608,7 @@
           }
         ]
       },
-      "latency_ms": 36.75
+      "latency_ms": 29.74
     },
     {
       "id": "A06",
@@ -620,7 +620,7 @@
         "report": "joiners",
         "rows": []
       },
-      "latency_ms": 36.46
+      "latency_ms": 35.21
     },
     {
       "id": "A07",
@@ -637,7 +637,7 @@
           }
         ]
       },
-      "latency_ms": 34.98
+      "latency_ms": 37.29
     },
     {
       "id": "A08",
@@ -670,7 +670,7 @@
           }
         ]
       },
-      "latency_ms": 37.38
+      "latency_ms": 42.26
     },
     {
       "id": "A09",
@@ -691,7 +691,7 @@
           }
         ]
       },
-      "latency_ms": 46.45
+      "latency_ms": 42.2
     },
     {
       "id": "A10",
@@ -724,7 +724,7 @@
           }
         ]
       },
-      "latency_ms": 33.91
+      "latency_ms": 31.1
     },
     {
       "id": "S01",
@@ -735,7 +735,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 2540.42
+      "latency_ms": 2506.23
     },
     {
       "id": "S02",
@@ -746,7 +746,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 67.04
+      "latency_ms": 71.88
     },
     {
       "id": "S03",
@@ -757,7 +757,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 41.35
+      "latency_ms": 40.0
     },
     {
       "id": "S04",
@@ -768,7 +768,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 2070.05
+      "latency_ms": 2101.39
     },
     {
       "id": "S05",
@@ -779,7 +779,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 2465.57
+      "latency_ms": 2562.28
     },
     {
       "id": "S06",
@@ -790,7 +790,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 30.42
+      "latency_ms": 30.85
     },
     {
       "id": "S07",
@@ -801,7 +801,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 61.9
+      "latency_ms": 55.49
     },
     {
       "id": "S08",
@@ -812,7 +812,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 2375.61
+      "latency_ms": 2320.37
     },
     {
       "id": "S09",
@@ -823,7 +823,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 40.35
+      "latency_ms": 46.16
     },
     {
       "id": "S10",
@@ -834,7 +834,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 45.46
+      "latency_ms": 44.82
     },
     {
       "id": "R01",
@@ -845,7 +845,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 83.79
+      "latency_ms": 72.95
     },
     {
       "id": "R02",
@@ -856,7 +856,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 130.82
+      "latency_ms": 121.2
     },
     {
       "id": "R03",
@@ -867,7 +867,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 133.16
+      "latency_ms": 119.84
     },
     {
       "id": "R04",
@@ -878,7 +878,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 2785.1
+      "latency_ms": 2758.69
     },
     {
       "id": "R05",
@@ -889,7 +889,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 68.87
+      "latency_ms": 71.25
     },
     {
       "id": "R06",
@@ -901,7 +901,7 @@
         "fault_injected": "transport OSError",
         "attempts": 2
       },
-      "latency_ms": 242.73
+      "latency_ms": 244.75
     },
     {
       "id": "R07",
@@ -913,7 +913,7 @@
         "fault_injected": "transport OSError",
         "attempts": 1
       },
-      "latency_ms": 39.54
+      "latency_ms": 36.08
     },
     {
       "id": "R08",
@@ -925,7 +925,7 @@
         "fault_injected": "Gemini 429",
         "live_inference": false
       },
-      "latency_ms": 870.27
+      "latency_ms": 950.01
     },
     {
       "id": "R09",
@@ -936,7 +936,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 2507.05
+      "latency_ms": 2504.27
     },
     {
       "id": "R10",
@@ -947,7 +947,7 @@
       "evidence": {
         "checks": "passed"
       },
-      "latency_ms": 4835.57
+      "latency_ms": 4999.64
     }
   ]
 }

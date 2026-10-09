@@ -18,7 +18,8 @@ Prepared October 10, 2026.
 
 ## Live-model verification
 
-- Gemini live mode is enabled locally with the user-confirmed Free tier and `gemini-3.8-flash`. A bounded two-turn smoke test passed for policy retrieval and a contextual carryover follow-up; both responses used verified policy facts and were recorded in `artifacts/live-smoke.json`.
+- Gemini live mode is enabled locally with the user-confirmed Free tier and `gemini-3.5-flash-lite`, Google's stable high-throughput model. A live balance smoke test passed with one model call. The earlier bounded `gemini-3.8-flash` two-turn test remains recorded in `artifacts/live-smoke.json`.
+- Supported workflow routing now runs locally and Gemini is reserved for grounded response writing, reducing normal usage from two model requests to one per employee message.
 - The live smoke is evidence of connectivity and grounded conversation behavior, not a statistical model-quality benchmark. The 60-case evaluation remains deterministic.
 
 ## Externally blocked or intentionally unverified
