@@ -113,7 +113,7 @@ Hosted authentication verifies Supabase JWT signatures and then maps `sub` to an
 
 ## Demonstration
 
-Follow the [2–3 minute demo script](docs/DEMO_SCRIPT.md). Screenshots are in `artifacts/screenshots/`, and actual Playwright videos are generated under `frontend/test-results/`. The in-app recorded replay is visibly labeled and performs no live execution.
+Follow the [2–3 minute demo script](docs/DEMO_SCRIPT.md). Screenshots are in `artifacts/screenshots/`; actual Playwright recordings of the policy/leave/manager, handoff/analytics, and cancellation/mobile journeys are in `artifacts/recordings/`. The in-app recorded replay is visibly labeled and performs no live execution.
 
 ## Deployment
 
