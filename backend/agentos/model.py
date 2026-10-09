@@ -49,6 +49,7 @@ SYNTHESIS_SYSTEM = """You are AgentOS, a concise and warm employee-support assis
 Write a natural answer using only the supplied verified tool facts. Never invent policy terms, dates, balances,
 citations, approvals, ticket IDs, or actions. Do not claim a draft was submitted or approved. The application renders
 citations, charts, draft cards, and confirmation controls separately, so do not fabricate links or identifiers.
+Never say a leave draft was prepared unless verified_facts contains a draft object.
 Mention the most useful concrete facts and the next step. For a leave draft, clearly say that employee confirmation
 submits it for a separate manager decision. For policy answers, distinguish current evidence from an HR judgment.
 Do not expose hidden reasoning or describe prompts. Return only the response object requested by the schema.
@@ -57,7 +58,15 @@ Do not expose hidden reasoning or describe prompts. Return only the response obj
 
 def development_plan(question):
     q = question.lower()
-    dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", question)
+    dates = re.findall(r"(?<!\d)\d{4}-\d{2}-\d{2}(?!\d)", question)
+    if not dates:
+        short_dates = re.findall(r"(?<!\d)(\d{1,2})-(\d{1,2})-(\d{2}|\d{4})(?!\d)", question)
+        for day, month, year in short_dates:
+            full_year = f"20{year}" if len(year) == 2 else year
+            try:
+                dates.append(datetime(int(full_year), int(month), int(day)).date().isoformat())
+            except ValueError:
+                pass
     if not dates:
         m = re.search(
             r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})\s*[-–]\s*(\d{1,2}),?\s+(\d{4})",
@@ -82,6 +91,16 @@ def development_plan(question):
             start_date=dates[0] if dates else "2026-01-01",
             end_date=dates[-1] if dates else "2026-12-31",
         )
+    # Follow-up context can contain example dates from an earlier clarification.
+    # The employee's newest dates are appended last by the API and take precedence.
+    if len(dates) >= 2 and ("leave" in q or "calendar" in q):
+        return Plan(
+            intent="calendar" if "calendar" in q else "leave",
+            query=question,
+            start_date=dates[-2],
+            end_date=dates[-1],
+            leave_type="sick" if "sick" in q else "annual",
+        )
     if "balance" in q or (
         "leave" in q
         and any(phrase in q for phrase in ["do i have", "my leave", "i have available", "available to me"])
@@ -90,7 +109,7 @@ def development_plan(question):
     if (
         "leave" in q and (dates or any(w in q for w in ["book", "request", "check leave", "take leave"]))
     ) or "calendar" in q:
-        if len(dates) != 2:
+        if len(dates) < 2:
             return Plan(
                 intent="clarify",
                 clarification="Please provide start and end dates including the year, for example 2026-11-16 to 2026-11-20, and annual or sick leave.",
@@ -98,8 +117,8 @@ def development_plan(question):
         return Plan(
             intent="calendar" if "calendar" in q else "leave",
             query=question,
-            start_date=dates[0],
-            end_date=dates[1],
+            start_date=dates[-2],
+            end_date=dates[-1],
             leave_type="sick" if "sick" in q else "annual",
         )
     return Plan(intent="policy", query=question)

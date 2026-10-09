@@ -279,6 +279,7 @@ async def chat(body: ChatBody, ctx: Identity = Depends(identity)):
                 )
             )
         question = body.question
+        routing_question = body.question
         if body.parent_run_id:
             parent = get_run(ctx, str(body.parent_run_id))
             previous_answer = str(parent.result.get("answer", ""))[:1200]
@@ -293,6 +294,9 @@ async def chat(body: ChatBody, ctx: Identity = Depends(identity)):
                 + f"\n{label}: "
                 + question
             )
+            routing_question = (
+                "Previous employee request: " + parent.question[:1000] + f"\n{label}: " + body.question
+            )
         return await drive(
             ctx,
             run_id,
@@ -300,6 +304,7 @@ async def chat(body: ChatBody, ctx: Identity = Depends(identity)):
                 "context": ctx.model_dump(),
                 "run_id": run_id,
                 "question": question,
+                "routing_question": routing_question,
                 "approval_status": "none",
                 "handoff_status": "none",
                 "action": "",

@@ -16,6 +16,7 @@ class State(TypedDict, total=False):
     context: dict
     run_id: str
     question: str
+    routing_question: str
     plan: dict
     resolved_dates: dict
     evidence: list
@@ -85,7 +86,7 @@ def build_graph(gateway, checkpointer, topology="specialists"):
         # The supported intents are deliberately small and security-sensitive, so
         # route them locally and spend the single Gemini call on grounded language.
         # Tool authorization and approvals remain server-owned in every mode.
-        plan = development_plan(state["question"])
+        plan = development_plan(state.get("routing_question", state["question"]))
         meta = {"model": "local-router-v1", "tokens": {}}
         model_degraded = False
         specialist = (

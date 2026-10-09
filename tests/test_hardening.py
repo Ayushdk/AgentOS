@@ -42,6 +42,25 @@ def test_personal_leave_phrasing_routes_to_balance():
     assert development_plan("How much leave do I have available?").intent == "balance"
 
 
+def test_leave_dates_accept_employee_formats_and_latest_followup_dates():
+    short = development_plan("I need emergency leave from 16-10-26 to 21-10-26")
+    assert (short.intent, short.start_date, short.end_date) == (
+        "leave",
+        "2026-10-16",
+        "2026-10-21",
+    )
+    followup = development_plan(
+        "Previous employee request: write a mail asking for leave. "
+        "Please provide dates, for example 2026-11-16 to 2026-11-20. "
+        "Employee clarification: from2026-10-16 to 2026-10-21"
+    )
+    assert (followup.intent, followup.start_date, followup.end_date) == (
+        "leave",
+        "2026-10-16",
+        "2026-10-21",
+    )
+
+
 def test_supabase_signature_and_server_side_role_mapping(actor, monkeypatch):
     private = ec.generate_private_key(ec.SECP256R1())
     subject = uid()
