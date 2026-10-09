@@ -1,0 +1,95 @@
+﻿{
+    "checked_at":  "2026-10-10T01:51:50.9795567+05:30",
+    "model":  "gemini-3.8-flash",
+    "tier_attestation":  "user-confirmed-free-tier",
+    "scope":  "two-turn-live-smoke",
+    "first":  {
+                  "question":  "Explain our annual leave allowance and the main rules.",
+                  "answer":  "Under our leave policy, annual leave provides 18 working days per calendar year (while sick leave provides 8 working days). The working week runs Monday through Friday in Asia/Kolkata, so weekends and company holidays do not count against your leave balance.\n\nKey rules for requesting leave include:\nâ¢ Leave requests cannot start in the past or exceed your available balance.\nâ¢ Requests cannot overlap with pending or approved leave.\nâ¢ A request cannot span more than 91 calendar days, and requests with no working days are not accepted.\nâ¢ Pending requests reserve your available days, and approval deducts them from your remaining balance.\n\nAs a next step, if you require an exception to these rules, you can contact People Operations for review.",
+                  "specialist":  "policy",
+                  "response_mode":  "live_grounded",
+                  "model_calls":  2,
+                  "token_usage":  {
+                                      "cache_tokens_details":  null,
+                                      "cached_content_token_count":  null,
+                                      "candidates_token_count":  42,
+                                      "candidates_tokens_details":  null,
+                                      "prompt_token_count":  496,
+                                      "prompt_tokens_details":  [
+                                                                    {
+                                                                        "modality":  "TEXT",
+                                                                        "token_count":  496
+                                                                    }
+                                                                ],
+                                      "thoughts_token_count":  56,
+                                      "tool_use_prompt_token_count":  null,
+                                      "tool_use_prompt_tokens_details":  null,
+                                      "total_token_count":  594,
+                                      "traffic_type":  null,
+                                      "synthesis":  {
+                                                        "cache_tokens_details":  null,
+                                                        "cached_content_token_count":  null,
+                                                        "candidates_token_count":  166,
+                                                        "candidates_tokens_details":  null,
+                                                        "prompt_token_count":  762,
+                                                        "prompt_tokens_details":  [
+                                                                                      {
+                                                                                          "modality":  "TEXT",
+                                                                                          "token_count":  762
+                                                                                      }
+                                                                                  ],
+                                                        "thoughts_token_count":  null,
+                                                        "tool_use_prompt_token_count":  null,
+                                                        "tool_use_prompt_tokens_details":  null,
+                                                        "total_token_count":  928,
+                                                        "traffic_type":  null
+                                                    }
+                                  },
+                  "status":  "completed"
+              },
+    "follow_up":  {
+                      "question":  "What happens if I do not use all of it this year?",
+                      "answer":  "Our current leave policy documents state that annual leave provides 18 working days per calendar year and that balances are maintained by People Operations, but they do not specify rules regarding year-end carryover or forfeiture. Determining whether unused days carry over, expire, or are handled differently requires an HR judgment. As a next step, please reach out directly to People Operations for clarification or review of your remaining balance.",
+                      "specialist":  "policy",
+                      "model_calls":  2,
+                      "status":  "completed",
+                      "response_mode":  "live_grounded",
+                      "token_usage":  {
+                                          "cache_tokens_details":  null,
+                                          "cached_content_token_count":  null,
+                                          "candidates_token_count":  39,
+                                          "candidates_tokens_details":  null,
+                                          "prompt_token_count":  677,
+                                          "prompt_tokens_details":  [
+                                                                        {
+                                                                            "modality":  "TEXT",
+                                                                            "token_count":  677
+                                                                        }
+                                                                    ],
+                                          "thoughts_token_count":  80,
+                                          "tool_use_prompt_token_count":  null,
+                                          "tool_use_prompt_tokens_details":  null,
+                                          "total_token_count":  796,
+                                          "traffic_type":  null,
+                                          "synthesis":  {
+                                                            "cache_tokens_details":  null,
+                                                            "cached_content_token_count":  null,
+                                                            "candidates_token_count":  85,
+                                                            "candidates_tokens_details":  null,
+                                                            "prompt_token_count":  968,
+                                                            "prompt_tokens_details":  [
+                                                                                          {
+                                                                                              "modality":  "TEXT",
+                                                                                              "token_count":  968
+                                                                                          }
+                                                                                      ],
+                                                            "thoughts_token_count":  null,
+                                                            "tool_use_prompt_token_count":  null,
+                                                            "tool_use_prompt_tokens_details":  null,
+                                                            "total_token_count":  1053,
+                                                            "traffic_type":  null
+                                                        }
+                                      },
+                      "handoff_reason":  null
+                  }
+}

@@ -35,6 +35,50 @@ def build_graph(gateway, checkpointer, topology="specialists"):
     async def call(state, name, args, specialist):
         return await gateway.call(Identity(**state["context"]), name, args, state["run_id"], specialist)
 
+    async def grounded(state, specialist, result, fallback):
+        result = {**result}
+        if settings().model_mode != "live":
+            result["answer"] = fallback
+            result["response_mode"] = "deterministic"
+            return result
+        ctx = Identity(**state["context"])
+        with transaction() as s:
+            run = s.get(AgentRun, state["run_id"])
+            if run.model_calls >= 4:
+                result["answer"] = fallback
+                result["response_mode"] = "bounded_fallback"
+                return result
+            run.model_calls += 1
+            audit(
+                s,
+                ctx,
+                "model.synthesis_attempt",
+                {"model": settings().gemini_model, "specialist": specialist},
+                state["run_id"],
+            )
+        facts = {key: value for key, value in result.items() if key != "answer"}
+        try:
+            answer, meta = await model.synthesize(state["question"], specialist, facts, fallback)
+            result["answer"] = answer
+            result["response_mode"] = "live_grounded"
+            with transaction() as s:
+                run = s.get(AgentRun, state["run_id"])
+                run.token_usage = {**run.token_usage, "synthesis": meta["tokens"]}
+        except DomainError as error:
+            result["answer"] = fallback
+            result["response_mode"] = (
+                "quota_fallback" if error.code == "quota_exhausted" else "model_fallback"
+            )
+            with transaction() as s:
+                audit(
+                    s,
+                    ctx,
+                    "model.synthesis_fallback",
+                    {"code": error.code},
+                    state["run_id"],
+                )
+        return result
+
     async def coordinator(state):
         ctx = Identity(**state["context"])
         if settings().model_mode == "live":
@@ -100,26 +144,36 @@ def build_graph(gateway, checkpointer, topology="specialists"):
         }
 
     async def policy(state):
-        result = await call(state, "search_policies", {"query": state["question"]}, "policy")
+        # Search with the coordinator's focused query. Follow-up state can include the
+        # previous answer for conversational context, which must not become retrieval
+        # keywords or accidentally trigger an exception handoff.
+        plan = Plan(**state["plan"])
+        query = plan.query.strip() or state["question"]
+        result = await call(state, "search_policies", {"query": query}, "policy")
         if result.get("handoff_reason"):
             return await handoff(state, result)
+        result = await grounded(state, "policy", result, result["answer"])
         return {"result": result, "evidence": result["citations"], "final_response": result["answer"]}
 
     async def workflow(state):
         plan = Plan(**state["plan"])
         if plan.intent == "balance":
             result = await call(state, "get_my_leave_balance", {}, "workflow")
-            return {
-                "result": {
-                    **result,
-                    "answer": "Here is your current leave balance. Pending requests reserve available days.",
-                }
-            }
+            result = await grounded(
+                state,
+                "workflow",
+                result,
+                "Here is your current leave balance. Pending requests reserve available days.",
+            )
+            return {"result": result}
         dates = {"start_date": plan.start_date, "end_date": plan.end_date}
         try:
             events = await call(state, "get_my_calendar_events", dates, "workflow")
             if plan.intent == "calendar":
-                return {"result": {**events, "answer": "Your simulated calendar events for this period."}}
+                events = await grounded(
+                    state, "workflow", events, "Here are your simulated calendar events for this period."
+                )
+                return {"result": events}
             balance = await call(state, "get_my_leave_balance", {}, "workflow")
             calculation = await call(state, "calculate_working_days", dates, "workflow")
             draft = await call(
@@ -128,17 +182,19 @@ def build_graph(gateway, checkpointer, topology="specialists"):
                 {**dates, "leave_type": plan.leave_type, "idempotency_key": state["run_id"]},
                 "workflow",
             )
+            result = await grounded(
+                state,
+                "workflow",
+                {**draft, "action": "submit_leave"},
+                "I checked your dates, balance, holidays, and simulated calendar. Review this draft below. Confirming submits it for separate manager approval; it does not approve your leave.",
+            )
             return {
                 "action": "submit_leave",
                 "approval_id": draft["approval_id"],
                 "draft_reference": draft["draft"]["id"],
                 "approval_status": "awaiting_employee",
                 "tool_results": {"balance": balance, "calendar": events, "calculation": calculation},
-                "result": {
-                    **draft,
-                    "action": "submit_leave",
-                    "answer": "Review this draft. Confirming submits it for separate manager approval; it does not approve your leave.",
-                },
+                "result": result,
             }
         except DomainError as e:
             if e.status >= 500:
@@ -178,12 +234,13 @@ def build_graph(gateway, checkpointer, topology="specialists"):
                 },
                 "analytics",
             )
-            return {
-                "result": {
-                    **result,
-                    "answer": f"Returned {len(result['rows'])} aggregate groups for the selected period. Total: {result['total']} {result['chart']['unit'].lower()}.",
-                }
-            }
+            result = await grounded(
+                state,
+                "analytics",
+                result,
+                f"I found {len(result['rows'])} aggregate groups for the selected period, totaling {result['total']} {result['chart']['unit'].lower()}. The chart and source rows below use the returned report data.",
+            )
+            return {"result": result}
         except DomainError as e:
             return {"result": {"answer": e.message, "error_code": e.code}}
 

@@ -16,9 +16,12 @@ Prepared October 10, 2026.
 - Supabase schema, pgvector, runtime/report roles, synthetic hosted integration, and checkpoint reconnection verified.
 - 60/60 frozen deterministic scenarios, 72/72 expanded backend tests, and 3/3 Playwright journeys passed. Frontend production build and Ruff checks passed.
 
-## Externally blocked or intentionally unverified
+## Live-model verification
 
-- Live Gemini inference: model listing succeeded, but free-tier/billing-disabled status was not confirmed. No live inference result is claimed.
+- Gemini live mode is enabled locally with the user-confirmed Free tier and `gemini-3.8-flash`. A bounded two-turn smoke test passed for policy retrieval and a contextual carryover follow-up; both responses used verified policy facts and were recorded in `artifacts/live-smoke.json`.
+- The live smoke is evidence of connectivity and grounded conversation behavior, not a statistical model-quality benchmark. The 60-case evaluation remains deterministic.
+
+## Externally blocked or intentionally unverified
 - Hosted Supabase login: JWT verification is implemented and signing keys were checked, but anonymous sign-in is disabled and no synthetic Auth users exist.
 - Vercel/Render deployment: configuration is ready, but no authenticated account session was available. No deployment URL is claimed.
 - Render memory/cold start: local backend plus MCP RSS was measured; target-host compatibility remains unverified.

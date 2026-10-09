@@ -281,9 +281,18 @@ async def chat(body: ChatBody, ctx: Identity = Depends(identity)):
         question = body.question
         if body.parent_run_id:
             parent = get_run(ctx, str(body.parent_run_id))
-            if not parent.result.get("needs_clarification"):
-                raise DomainError("invalid_followup", "That request does not need clarification.")
-            question = parent.question + "\nEmployee clarification: " + question
+            previous_answer = str(parent.result.get("answer", ""))[:1200]
+            label = (
+                "Employee clarification" if parent.result.get("needs_clarification") else "Employee follow-up"
+            )
+            question = (
+                "Previous employee request: "
+                + parent.question[:1000]
+                + "\nPrevious grounded answer: "
+                + previous_answer
+                + f"\n{label}: "
+                + question
+            )
         return await drive(
             ctx,
             run_id,

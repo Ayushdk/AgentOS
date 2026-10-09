@@ -1,10 +1,16 @@
 import json
+import os
 import statistics
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pytest
+
+# The frozen evaluation is deterministic by design, regardless of the local
+# runtime mode selected in .env. Individual fault tests opt into live mode with
+# monkeypatches and mocked clients.
+os.environ["MODEL_MODE"] = "development"
 
 RESULTS = []
 
