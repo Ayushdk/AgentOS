@@ -7,7 +7,7 @@ from .auth import Identity
 from .config import settings
 from .db import transaction
 from .errors import DomainError
-from .model import ModelAdapter, Plan
+from .model import ModelAdapter, Plan, development_plan
 from .models import AgentRun
 from .services import audit, prepare_handoff
 
@@ -27,6 +27,7 @@ class State(TypedDict, total=False):
     action: str
     result: dict
     final_response: str
+    model_degraded: bool
 
 
 def build_graph(gateway, checkpointer, topology="specialists"):
@@ -37,9 +38,9 @@ def build_graph(gateway, checkpointer, topology="specialists"):
 
     async def grounded(state, specialist, result, fallback):
         result = {**result}
-        if settings().model_mode != "live":
+        if settings().model_mode != "live" or state.get("model_degraded"):
             result["answer"] = fallback
-            result["response_mode"] = "deterministic"
+            result["response_mode"] = "quota_fallback" if state.get("model_degraded") else "deterministic"
             return result
         ctx = Identity(**state["context"])
         with transaction() as s:
@@ -91,17 +92,21 @@ def build_graph(gateway, checkpointer, topology="specialists"):
         try:
             plan, meta = await model.plan(state["question"])
         except DomainError as e:
-            # Model/tool outage is evidence for a confirmed handoff, not a fictitious answer.
-            return await handoff(
-                state,
-                {
-                    "answer": e.message,
-                    "handoff_reason": e.code,
-                    "citations": [],
-                    "checks": ["model_availability"],
-                    "error_code": e.code,
-                },
-            )
+            # Model availability must not disable read-only support. The local
+            # planner cannot grant permissions or bypass the normal approval path.
+            plan = development_plan(state["question"])
+            with transaction() as s:
+                audit(
+                    s,
+                    ctx,
+                    "model.routing_fallback",
+                    {"code": e.code, "planner": "development-rules-v1"},
+                    state["run_id"],
+                )
+            meta = {"model": "development-rules-v1", "tokens": {}}
+            model_degraded = True
+        else:
+            model_degraded = False
         specialist = (
             "workflow"
             if plan.intent in ("leave", "balance", "calendar")
@@ -124,6 +129,7 @@ def build_graph(gateway, checkpointer, topology="specialists"):
             )
         return {
             "plan": plan.model_dump(),
+            "model_degraded": model_degraded,
             "resolved_dates": {"start": plan.start_date, "end": plan.end_date},
             "tool_results": {},
             "evidence": [],
@@ -159,11 +165,16 @@ def build_graph(gateway, checkpointer, topology="specialists"):
         plan = Plan(**state["plan"])
         if plan.intent == "balance":
             result = await call(state, "get_my_leave_balance", {}, "workflow")
+            balance_summary = "; ".join(
+                f"{item['leave_type'].title()}: {item['available']} available "
+                f"({item['remaining']} remaining, {item['reserved']} reserved)"
+                for item in result["balances"]
+            )
             result = await grounded(
                 state,
                 "workflow",
                 result,
-                "Here is your current leave balance. Pending requests reserve available days.",
+                f"Your current leave balance is {balance_summary}. Pending requests reserve available days.",
             )
             return {"result": result}
         dates = {"start_date": plan.start_date, "end_date": plan.end_date}

@@ -9,6 +9,7 @@ from agentos.analytics import validate_sql
 from agentos.config import Settings, settings
 from agentos.db import transaction
 from agentos.errors import DomainError
+from agentos.model import development_plan
 from agentos.models import AuthIdentity, Leave, now, uid
 from agentos.public_demo import select_demo_persona
 from agentos.seed import seed_tenant
@@ -35,6 +36,10 @@ def test_hosted_configuration_refuses_development_auth():
 def test_unconfigured_live_model_cannot_start():
     with pytest.raises(ValueError):
         Settings(model_mode="live", gemini_free_tier_verified=False)
+
+
+def test_personal_leave_phrasing_routes_to_balance():
+    assert development_plan("How much leave do I have available?").intent == "balance"
 
 
 def test_supabase_signature_and_server_side_role_mapping(actor, monkeypatch):

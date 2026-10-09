@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import re
+import time
 from datetime import datetime
 from typing import Literal
 
@@ -81,7 +82,10 @@ def development_plan(question):
             start_date=dates[0] if dates else "2026-01-01",
             end_date=dates[-1] if dates else "2026-12-31",
         )
-    if "balance" in q:
+    if "balance" in q or (
+        "leave" in q
+        and any(phrase in q for phrase in ["do i have", "my leave", "i have available", "available to me"])
+    ):
         return Plan(intent="balance", query=question)
     if (
         "leave" in q and (dates or any(w in q for w in ["book", "request", "check leave", "take leave"]))
@@ -104,6 +108,20 @@ def development_plan(question):
 class ModelAdapter:
     def __init__(self):
         self.client = None
+        self.quota_blocked_until = 0.0
+
+    def ensure_quota_window(self):
+        if time.monotonic() < self.quota_blocked_until:
+            raise DomainError(
+                "quota_exhausted",
+                "Gemini's Free tier is temporarily exhausted. AgentOS is using its safe local fallback.",
+                429,
+            )
+
+    def block_quota_window(self):
+        # Avoid repeatedly calling a provider that has already reported its daily
+        # free-tier quota exhausted. A process restart or four hours clears this.
+        self.quota_blocked_until = time.monotonic() + 4 * 60 * 60
 
     def get_client(self):
         if self.client is None:
@@ -141,6 +159,7 @@ class ModelAdapter:
     async def plan(self, question):
         if settings().model_mode == "development":
             return development_plan(question), {"model": "development-rules-v1", "calls": 0, "tokens": {}}
+        self.ensure_quota_window()
         self.budget()
         from google.genai import types
 
@@ -193,6 +212,7 @@ class ModelAdapter:
         except Exception as e:
             logger.warning("Gemini planning failed: %s", type(e).__name__, exc_info=True)
             if getattr(e, "code", None) == 429 or "429" in str(e):
+                self.block_quota_window()
                 raise DomainError(
                     "quota_exhausted",
                     "Gemini quota is unavailable. No action was taken. Use the recorded demo or retry later.",
@@ -248,6 +268,7 @@ class ModelAdapter:
         """Turn verified facts into a natural answer; business state remains server-owned."""
         if settings().model_mode == "development":
             return fallback, {"model": "development-rules-v1", "tokens": {}}
+        self.ensure_quota_window()
         self.budget()
         from google.genai import types
 
@@ -283,5 +304,6 @@ class ModelAdapter:
         except Exception as error:
             logger.warning("Gemini synthesis failed: %s", type(error).__name__, exc_info=True)
             if getattr(error, "code", None) == 429 or "429" in str(error):
+                self.block_quota_window()
                 raise DomainError("quota_exhausted", "Gemini response quota is unavailable.", 429) from None
             raise DomainError("model_unavailable", "Gemini could not compose the response.", 503) from None
