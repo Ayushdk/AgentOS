@@ -322,7 +322,7 @@ AgentOS avoids generic "AI template" aesthetics—no flashing neon borders, no d
 ### 3. Interactive Employee Calendar (`frontend/components/calendar/calendar-view.tsx`)
 - **Monthly Grid Engine:** Accurately computes monthly layouts, padding days from previous and subsequent months, and highlights the current day.
 - **Comprehensive Event Aggregation:**
-  - **Company Holidays:** Amber badge pills showing statutory non-working holidays (e.g., Thanksgiving, Christmas, New Year's Day) from `GET /calendar`.
+  - **Company Holidays:** Amber badge pills showing authorized corporate holidays (Meridian Foundation Day, Winter Holiday, New Year's Day) from `GET /calendar`.
   - **Personal Leave Records:** Color-coded status pills indicating `approved` (green), `pending` (yellow), and `rejected` (red) time off.
   - **Simulated Work Calendar:** Calendar event indicators for internal meetings.
   - **Manager Overlap View:** For managers, displays direct reports' approved and pending absences directly on the team schedule.
@@ -1003,7 +1003,7 @@ Automated screenshot artifacts generated during end-to-end test execution:
 ### Advanced Edge Cases & System Tradeoffs
 36. **Q: What happens if an employee submits a leave request spanning a public holiday?**  
     *30-second summary:* The working day calculator detects the holiday, excludes it from billable days, and decrements only actual business days from the leave balance.  
-    *Deep explanation:* If an employee requests Monday to Friday (5 calendar days) and Wednesday is Thanksgiving, `calculate_working_days` returns 4 working days. The draft request is prepared for 4 days, and only 4 days are deducted from the employee's balance upon manager approval.
+    *Deep explanation:* If an employee requests Monday to Friday (5 calendar days) and Wednesday is Meridian Foundation Day (Nov 18), `calculate_working_days` returns 4 working days. The draft request is prepared for 4 days, and only 4 days are deducted from the employee's balance upon manager approval.
 
 37. **Q: What happens if two managers attempt to act on the same leave request simultaneously?**  
     *30-second summary:* Database row locking ensures the first decision commits, while the second attempt fails or returns the already-updated status.  
@@ -1078,8 +1078,8 @@ Automated screenshot artifacts generated during end-to-end test execution:
    - Use the embedded AI prompt: *"Do I need a doctor's note for 2 days sick leave?"*
    - Show the grounded answer citing Section 3.2: *"Medical certificates are required only for absences exceeding 3 consecutive business days."*
 3. **Navigate to Employee Calendar:**
-   - Show the interactive November 2026 view. Point out statutory Thanksgiving holidays.
-   - Click on November 26 to inspect holiday details in the right-hand drawer.
+   - Show the interactive November 2026 view. Point out authorized company holidays (e.g., Meridian Foundation Day on Nov 18).
+   - Click on November 18 to inspect holiday details in the right-hand drawer.
 
 #### Scene 2: Two-Phase Leave Workflow (1.5 Minutes)
 1. **Draft Leave via AI Assistant:**

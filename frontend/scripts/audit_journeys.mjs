@@ -51,12 +51,23 @@ async function runAudit() {
   await page.getByRole('button', { name: 'Calendar', exact: true }).click();
   await page.waitForSelector('.calendar-heading');
   const calHeading = await page.locator('.calendar-heading').innerText();
-  console.log(`  - Verified Calendar View: ${calHeading}`);
+  console.log(`  - Verified Current Calendar View: ${calHeading}`);
+
+  // If on current month (e.g. October), advance to November to inspect corporate holiday
+  if (!calHeading.includes('November')) {
+    await page.getByRole('button', { name: 'Next month' }).click();
+    await page.waitForSelector('.calendar-heading:has-text("November")');
+  }
+
   const hasFoundationDay = await page.locator('.badge-holiday:has-text("Meridian Foundation Day")').isVisible();
-  console.log(`  - Verified Meridian Foundation Day holiday badge: ${hasFoundationDay}`);
+  console.log(`  - Verified Meridian Foundation Day holiday badge in November: ${hasFoundationDay}`);
   await page.locator('.calendar-day-cell:has-text("18")').first().click();
   await page.waitForSelector('.inspector-card:has-text("Meridian Foundation Day")');
   console.log('  - Verified Day Inspector Panel opens with company holiday details.');
+
+  // Return to Today
+  await page.getByRole('button', { name: 'Today' }).click();
+  console.log('  - Verified Today button resets to current month.');
 
   // Check Policy Explorer
   console.log('  - Testing Policy Explorer & Document reading...');

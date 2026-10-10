@@ -17,7 +17,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api, type Identity, type Leave, type TeamMember } from "@/lib/api";
+import { api, type Identity, type Leave, type TeamMember, type CalendarData, type HolidayItem } from "@/lib/api";
+import { formatShortDate } from "@/lib/dates";
 
 interface ManagerDashboardProps {
   person: Identity;
@@ -40,26 +41,34 @@ const defaultTeamMembers = [
   { id: "E009", name: "Samar Sen", role: "Systems Engineer", status: "Active" as const, joined_on: "2024-01-10", exited_on: null, department: "Engineering" },
 ];
 
-const availabilityTimeline = [
-  { day: "Mon", date: "Nov 17", status: "all-in", label: "Full Team In" },
-  { day: "Tue", date: "Nov 18", status: "holiday", label: "Foundation Day" },
-  { day: "Wed", date: "Nov 19", status: "partial", label: "1 Remote" },
-  { day: "Thu", date: "Nov 20", status: "all-in", label: "Full Team In" },
-  { day: "Fri", date: "Nov 21", status: "all-in", label: "Full Team In" },
-  { day: "Mon", date: "Nov 24", status: "leave", label: "Ari Sen (Req)" },
-];
+function getUpcomingWorkingDays(holidays: HolidayItem[] = [], count = 5) {
+  const items = [];
+  const cur = new Date();
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  let daysAdded = 0;
+  let offset = 0;
+  while (daysAdded < count && offset < 14) {
+    const d = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + offset);
+    offset++;
+    const dayOfWeek = d.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
+    const dStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const matchedHoliday = holidays.find((h) => h.date === dStr);
+    items.push({
+      day: dayNames[dayOfWeek],
+      date: `${monthNames[d.getMonth()]} ${d.getDate()}`,
+      status: matchedHoliday ? "holiday" : "all-in",
+      label: matchedHoliday ? matchedHoliday.title : "Full Team In",
+    });
+    daysAdded++;
+  }
+  return items;
+}
 
 const formatDate = (d: string) => {
-  try {
-    return new Date(d + "T00:00:00+05:30").toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "Asia/Kolkata",
-    });
-  } catch {
-    return d;
-  }
+  return formatShortDate(d);
 };
 
 export function ManagerDashboard({
@@ -73,11 +82,17 @@ export function ManagerDashboard({
   const [promptText, setPromptText] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(defaultTeamMembers);
+  const [holidays, setHolidays] = useState<HolidayItem[]>([]);
 
   useEffect(() => {
     api<TeamMember[]>("/manager/team")
       .then((data) => {
         if (data && data.length > 0) setTeamMembers(data);
+      })
+      .catch(() => {});
+    api<CalendarData>("/calendar")
+      .then((data) => {
+        if (data && data.holidays) setHolidays(data.holidays);
       })
       .catch(() => {});
   }, []);
@@ -370,7 +385,7 @@ export function ManagerDashboard({
               </h3>
             </div>
             <div className="availability-timeline-list">
-              {availabilityTimeline.map((item, i) => (
+              {getUpcomingWorkingDays(holidays).map((item, i) => (
                 <div key={i} className="timeline-day-row">
                   <div className="timeline-date-badge">
                     <strong>{item.date}</strong>

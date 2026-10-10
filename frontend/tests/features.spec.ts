@@ -9,26 +9,38 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
   test('1. Employee Calendar navigation, holiday detection, and date inspector', async ({ page }) => {
     // Navigate to Calendar
     await page.getByRole('button', { name: 'Calendar', exact: true }).click();
-    await expect(page.locator('.calendar-heading')).toHaveText('November 2026', { timeout: 15000 });
+    // Default runtime month is October 2026
+    await expect(page.locator('.calendar-heading')).toHaveText('October 2026', { timeout: 15000 });
 
-    // Verify company holiday badge is present in the grid
-    await expect(page.locator('.badge-holiday').filter({ hasText: 'Meridian Foundation Day' })).toBeVisible({ timeout: 15000 });
+    // Verify today's date (Oct 11) is highlighted with is-today and today-indicator
+    const todayCell = page.locator('.calendar-day-cell.is-today');
+    await expect(todayCell).toBeVisible();
+    await expect(todayCell.locator('.today-indicator')).toHaveText('Today');
+    await expect(todayCell.locator('.day-number')).toHaveText('11');
+
+    // Default inspector shows today's date
+    await expect(page.locator('.inspector-title')).toContainText('October 11, 2026');
+
+    // Test Next Month navigation to November 2026
+    await page.getByRole('button', { name: 'Next month' }).click();
+    await expect(page.locator('.calendar-heading')).toHaveText('November 2026');
+    await expect(page.locator('.badge-holiday').filter({ hasText: 'Meridian Foundation Day' })).toBeVisible();
 
     // Click on Nov 18 (Foundation Day)
     const nov18Cell = page.locator('.calendar-day-cell').filter({ hasText: '18' }).first();
     await nov18Cell.click();
-
-    // Verify inspector details panel
     await expect(page.locator('.inspector-card')).toContainText('Meridian Foundation Day');
-    await expect(page.locator('.inspector-card')).toContainText('Official company observance');
+    await expect(page.locator('.inspector-card')).toContainText('Authorized corporate holiday');
 
-    // Test Next / Prev Month navigation
+    // Advance to December 2026
     await page.getByRole('button', { name: 'Next month' }).click();
     await expect(page.locator('.calendar-heading')).toHaveText('December 2026');
     await expect(page.locator('.badge-holiday').filter({ hasText: 'Winter Holiday' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Previous month' }).click();
-    await expect(page.locator('.calendar-heading')).toHaveText('November 2026');
+    // Click Today button to jump back to current month
+    await page.getByRole('button', { name: 'Today' }).click();
+    await expect(page.locator('.calendar-heading')).toHaveText('October 2026');
+    await expect(page.locator('.inspector-title')).toContainText('October 11, 2026');
   });
 
   test('2. Policy Explorer search, document reading, and grounded AI prompts', async ({ page }) => {
@@ -85,7 +97,7 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
 
     // Navigate to Team Calendar
     await page.getByRole('button', { name: 'Team Calendar', exact: true }).click();
-    await expect(page.locator('.calendar-heading')).toHaveText('November 2026', { timeout: 15000 });
+    await expect(page.locator('.calendar-heading')).toHaveText('October 2026', { timeout: 15000 });
     await expect(page.getByRole('button', { name: 'Team Leaves' })).toBeVisible();
   });
 
@@ -113,7 +125,7 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
 
     // Click Calendar in mobile drawer
     await page.getByRole('button', { name: 'Calendar', exact: true }).click();
-    await expect(page.locator('.calendar-heading')).toHaveText('November 2026', { timeout: 15000 });
+    await expect(page.locator('.calendar-heading')).toHaveText('October 2026', { timeout: 15000 });
 
     // Verify body does not horizontally overflow
     await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 390);

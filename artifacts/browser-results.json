@@ -3,7 +3,8 @@
     "argv": [
       "C:\\Program Files\\nodejs\\node.exe",
       "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\node_modules\\@playwright\\test\\cli.js",
-      "test"
+      "test",
+      "tests/journeys.spec.ts"
     ],
     "configFile": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\playwright.config.ts",
     "rootDir": "C:/Users/ayuu2/OneDrive/Desktop/ANGELONE_AGENT/frontend/tests",
@@ -105,223 +106,6 @@
   },
   "suites": [
     {
-      "title": "features.spec.ts",
-      "file": "features.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "AgentOS Comprehensive Feature Suite",
-          "file": "features.spec.ts",
-          "line": 3,
-          "column": 6,
-          "specs": [
-            {
-              "title": "1. Employee Calendar navigation, holiday detection, and date inspector",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1526,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-10T19:07:55.344Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-67cae-etection-and-date-inspector-chromium\\video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85b3cc1667c06e9efc8f-327c3e60c72a596f7d8b",
-              "file": "features.spec.ts",
-              "line": 9,
-              "column": 7
-            },
-            {
-              "title": "2. Policy Explorer search, document reading, and grounded AI prompts",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2974,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-10T19:07:57.006Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-dc20b-ing-and-grounded-AI-prompts-chromium\\video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85b3cc1667c06e9efc8f-790c37b901cb0ef58b52",
-              "file": "features.spec.ts",
-              "line": 34,
-              "column": 7
-            },
-            {
-              "title": "3. Manager Team Members Directory and Team Calendar",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1565,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-10T19:07:59.991Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-f8ee7-Directory-and-Team-Calendar-chromium\\video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85b3cc1667c06e9efc8f-1928be2c3aed0c6d505b",
-              "file": "features.spec.ts",
-              "line": 65,
-              "column": 7
-            },
-            {
-              "title": "4. Security role restrictions and unauthorized access barriers",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1246,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-10T19:08:01.572Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-01422-nauthorized-access-barriers-chromium\\video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85b3cc1667c06e9efc8f-0cb2a25d94f20bbe2e0b",
-              "file": "features.spec.ts",
-              "line": 92,
-              "column": 7
-            },
-            {
-              "title": "5. Mobile responsive navigation drawer and interaction",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 90000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1577,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-10T19:08:02.835Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-413d1-tion-drawer-and-interaction-chromium\\video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85b3cc1667c06e9efc8f-51eebdc71bab9d0240d9",
-              "file": "features.spec.ts",
-              "line": 107,
-              "column": 7
-            }
-          ]
-        }
-      ]
-    },
-    {
       "title": "journeys.spec.ts",
       "file": "journeys.spec.ts",
       "column": 0,
@@ -343,12 +127,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5664,
+                  "duration": 5632,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-10T19:08:04.436Z",
+                  "startTime": "2026-10-10T20:08:55.920Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -383,12 +167,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2766,
+                  "duration": 3258,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-10T19:08:10.113Z",
+                  "startTime": "2026-10-10T20:09:01.694Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -423,12 +207,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4545,
+                  "duration": 3472,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-10T19:08:12.893Z",
+                  "startTime": "2026-10-10T20:09:04.966Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -452,9 +236,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-10T19:07:54.850Z",
-    "duration": 22855.273,
-    "expected": 8,
+    "startTime": "2026-10-10T20:08:55.432Z",
+    "duration": 13165.817,
+    "expected": 3,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

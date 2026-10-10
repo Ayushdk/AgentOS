@@ -17,26 +17,32 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, type CalendarData, type Identity, type Leave, type HolidayItem } from "@/lib/api";
+import {
+  MONTH_NAMES,
+  WEEKDAYS,
+  toLocalDateString,
+  parseDateOnly,
+  formatDisplayDate,
+  generateCalendarCells,
+} from "@/lib/dates";
 
 interface CalendarViewProps {
   person: Identity;
   onNavigateLeave?: () => void;
 }
 
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
-  // Default to November 2026 (matching seeded Meridian Foundation Day & company data)
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 10, 1));
+  // Runtime local current date initialization (never hardcoded)
+  const [currentDate, setCurrentDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+  const [selectedDateStr, setSelectedDateStr] = useState<string | null>(() => {
+    return toLocalDateString(new Date());
+  });
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedDateStr, setSelectedDateStr] = useState<string | null>("2026-11-18");
   const [filterType, setFilterType] = useState<"all" | "holidays" | "leaves" | "team">("all");
 
   const loadCalendar = async () => {
@@ -59,6 +65,7 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
+  // Navigation handlers
   const handlePrevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
   };
@@ -68,70 +75,14 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
   };
 
   const handleToday = () => {
-    // Center on Nov 2026 for synthetic data context, or today if desired
-    setCurrentDate(new Date(2026, 10, 1));
-    setSelectedDateStr("2026-11-18");
+    const now = new Date();
+    setCurrentDate(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDateStr(toLocalDateString(now));
   };
 
-  // Grid math
-  const firstDayOfWeek = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-  // Helper date formatter
-  const formatDateStr = (y: number, m: number, d: number) => {
-    const mm = String(m + 1).padStart(2, "0");
-    const dd = String(d).padStart(2, "0");
-    return `${y}-${mm}-${dd}`;
-  };
-
-  // Build grid cells
-  const cells: Array<{
-    dayNumber: number;
-    dateStr: string;
-    isCurrentMonth: boolean;
-    isToday: boolean;
-  }> = [];
-
-  // Previous month overflow cells
-  for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-    const prevDay = daysInPrevMonth - i;
-    const prevMonth = month === 0 ? 11 : month - 1;
-    const prevYear = month === 0 ? year - 1 : year;
-    const dateStr = formatDateStr(prevYear, prevMonth, prevDay);
-    cells.push({
-      dayNumber: prevDay,
-      dateStr,
-      isCurrentMonth: false,
-      isToday: false,
-    });
-  }
-
-  // Current month cells
-  const todayStr = "2026-11-18"; // Synthetic reference day in enterprise calendar
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = formatDateStr(year, month, d);
-    cells.push({
-      dayNumber: d,
-      dateStr,
-      isCurrentMonth: true,
-      isToday: dateStr === todayStr,
-    });
-  }
-
-  // Next month overflow cells to fill 35 or 42 grid
-  const remainingCells = (cells.length % 7 === 0 ? 0 : 7 - (cells.length % 7));
-  for (let d = 1; d <= remainingCells; d++) {
-    const nextMonth = month === 11 ? 0 : month + 1;
-    const nextYear = month === 11 ? year + 1 : year;
-    const dateStr = formatDateStr(nextYear, nextMonth, d);
-    cells.push({
-      dayNumber: d,
-      dateStr,
-      isCurrentMonth: false,
-      isToday: false,
-    });
-  }
+  // Generate complete grid with leap-year and boundary protection
+  const todayStr = toLocalDateString(new Date());
+  const cells = generateCalendarCells(year, month, todayStr);
 
   // Match items for a given date
   const getItemsForDate = (dateStr: string) => {
@@ -155,23 +106,10 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
   // Selected date details
   const selectedDetails = selectedDateStr ? getItemsForDate(selectedDateStr) : null;
   const isSelectedDateAWeekend = selectedDateStr
-    ? [0, 6].includes(new Date(selectedDateStr + "T00:00:00").getDay())
+    ? parseDateOnly(selectedDateStr).isWeekend
     : false;
 
-  const formatDisplayDate = (dStr: string) => {
-    try {
-      const dt = new Date(dStr + "T00:00:00+05:30");
-      return dt.toLocaleDateString("en-IN", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "Asia/Kolkata",
-      });
-    } catch {
-      return dStr;
-    }
-  };
+  const isManager = person.role === "manager";
 
   return (
     <div className="calendar-page-container">
@@ -179,14 +117,16 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
       <div className="calendar-header-bar">
         <div className="calendar-title-group">
           <div className="calendar-badge">
-            <CalendarDays size={16} />
-            <span>Company Calendar</span>
+            {isManager ? <Users size={16} /> : <CalendarDays size={16} />}
+            <span>{isManager ? "Team & Corporate Calendar" : "Corporate & Personal Calendar"}</span>
           </div>
           <h1 className="calendar-heading">
             {MONTH_NAMES[month]} {year}
           </h1>
           <p className="calendar-subtext">
-            Enterprise work schedule, public holidays, and time-off tracking.
+            {isManager
+              ? "Direct report leave requests, authorized company holidays, and team availability (Asia/Kolkata)."
+              : "Official company holidays, personal time-off requests, and work schedule (Asia/Kolkata)."}
           </p>
         </div>
 
@@ -213,7 +153,7 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
             >
               My Leaves
             </button>
-            {person.role === "manager" && (
+            {isManager && (
               <button
                 type="button"
                 className={`filter-btn ${filterType === "team" ? "active" : ""}`}
@@ -231,7 +171,7 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
               onClick={handleToday}
               className="today-btn"
             >
-              Reference Today
+              Today
             </Button>
             <Button
               variant="outline"
@@ -303,7 +243,9 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
                   onClick={() => setSelectedDateStr(cell.dateStr)}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${cell.dateStr}${hasHoliday ? ` - Holiday: ${holidays[0].title}` : ""}`}
+                  aria-label={`${cell.dateStr}${cell.isToday ? " (Today)" : ""}${
+                    hasHoliday ? ` - Holiday: ${holidays[0].title}` : ""
+                  }`}
                 >
                   <div className="cell-top-bar">
                     <span className="day-number">{cell.dayNumber}</span>
@@ -344,7 +286,7 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
                         <div
                           key={tl.id}
                           className="cell-badge badge-team-leave"
-                          title={`${tl.employee_name || "Team member"}: ${tl.leave_type} (${tl.status})`}
+                          title={`${tl.employee_name || "Direct Report"}: ${tl.leave_type} (${tl.status})`}
                         >
                           <Users size={10} />
                           <span>
@@ -394,7 +336,7 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
                       <div key={i} className="inspector-item-box item-holiday">
                         <strong className="item-title">{h.title}</strong>
                         <p className="item-desc">
-                          Official company observance. Does not deduct from annual leave balance.
+                          Authorized corporate holiday (Asia/Kolkata). Does not deduct from annual leave balance.
                         </p>
                       </div>
                     ))}
@@ -449,7 +391,7 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
                   </div>
                 )}
 
-                {/* 4. Scheduled Calendar Events */}
+                {/* 4. Scheduled Calendar Events (Labeled as Demonstration Record) */}
                 {selectedDetails.events.length > 0 && (
                   <div className="inspector-section">
                     <h4 className="section-subtitle text-slate">
@@ -457,7 +399,10 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
                     </h4>
                     {selectedDetails.events.map((ev) => (
                       <div key={ev.id} className="inspector-item-box item-event">
-                        <strong className="item-title">{ev.title}</strong>
+                        <div className="item-header-row">
+                          <strong className="item-title">{ev.title}</strong>
+                          <span className="badge badge-sm badge-neutral">Simulated record</span>
+                        </div>
                         <p className="item-desc">
                           {new Date(ev.starts_at).toLocaleTimeString("en-IN", {
                             timeZone: "Asia/Kolkata",
@@ -513,11 +458,11 @@ export function CalendarView({ person, onNavigateLeave }: CalendarViewProps) {
             <div className="inspector-footer">
               <span className="legend-title">Legend:</span>
               <div className="legend-items">
-                <span className="legend-chip"><i className="dot dot-amber" /> Holiday</span>
+                <span className="legend-chip"><i className="dot dot-amber" /> Company Holiday</span>
                 <span className="legend-chip"><i className="dot dot-emerald" /> Approved Leave</span>
                 <span className="legend-chip"><i className="dot dot-orange" /> Pending Leave</span>
-                {person.role === "manager" && (
-                  <span className="legend-chip"><i className="dot dot-purple" /> Team Member</span>
+                {isManager && (
+                  <span className="legend-chip"><i className="dot dot-purple" /> Direct Report Leave</span>
                 )}
               </div>
             </div>

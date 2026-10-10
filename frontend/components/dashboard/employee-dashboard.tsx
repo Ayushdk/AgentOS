@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CalendarDays,
   Sparkles,
@@ -18,7 +18,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Identity, Leave } from "@/lib/api";
+import { api, type Identity, type Leave, type CalendarData } from "@/lib/api";
+import { formatShortDate, computeDaysAway, toLocalDateString } from "@/lib/dates";
 
 interface EmployeeDashboardProps {
   person: Identity;
@@ -29,23 +30,8 @@ interface EmployeeDashboardProps {
   busy: boolean;
 }
 
-const upcomingHolidays = [
-  { name: "Meridian Foundation Day", date: "Nov 18, 2026", daysAway: "in 38 days" },
-  { name: "Winter Holiday", date: "Dec 25, 2026", daysAway: "in 75 days" },
-  { name: "New Year's Day", date: "Jan 1, 2027", daysAway: "in 82 days" },
-];
-
 const formatDate = (d: string) => {
-  try {
-    return new Date(d + "T00:00:00+05:30").toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "Asia/Kolkata",
-    });
-  } catch {
-    return d;
-  }
+  return formatShortDate(d);
 };
 
 export function EmployeeDashboard({
@@ -57,6 +43,30 @@ export function EmployeeDashboard({
   busy,
 }: EmployeeDashboardProps) {
   const [promptText, setPromptText] = useState("");
+  const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
+  const [loadingCalendar, setLoadingCalendar] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    api<CalendarData>("/calendar")
+      .then((data) => {
+        if (active) setCalendarData(data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoadingCalendar(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const todayStr = toLocalDateString();
+  const futureHolidays = (calendarData?.holidays || [])
+    .filter((h) => h.date >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const nextHoliday = futureHolidays.length > 0 ? futureHolidays[0] : null;
 
   const annual = balances.find((b) => b.leave_type === "annual");
   const sick = balances.find((b) => b.leave_type === "sick");
@@ -166,15 +176,34 @@ export function EmployeeDashboard({
               <Palmtree size={18} />
             </div>
           </div>
-          <div className="stat-value-group">
-            <span className="stat-text-title">{upcomingHolidays[0].name}</span>
-            <span className="stat-subtext">{upcomingHolidays[0].date}</span>
-          </div>
-          <div className="stat-tag-row">
-            <span className="badge badge-amber-subtle">
-              Company Holiday · {upcomingHolidays[0].daysAway}
-            </span>
-          </div>
+          {loadingCalendar ? (
+            <div className="stat-value-group">
+              <span className="stat-text-title text-muted">Checking calendar…</span>
+              <span className="stat-subtext">Loading corporate schedule</span>
+            </div>
+          ) : nextHoliday ? (
+            <>
+              <div className="stat-value-group">
+                <span className="stat-text-title">{nextHoliday.title}</span>
+                <span className="stat-subtext">{formatShortDate(nextHoliday.date)}</span>
+              </div>
+              <div className="stat-tag-row">
+                <span className="badge badge-amber-subtle">
+                  Company Holiday · {computeDaysAway(nextHoliday.date)}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="stat-value-group">
+                <span className="stat-text-title">No Upcoming Holidays</span>
+                <span className="stat-subtext">All holidays observed</span>
+              </div>
+              <div className="stat-tag-row">
+                <span className="badge badge-neutral">Full working period</span>
+              </div>
+            </>
+          )}
           <div className="stat-footer-link">
             <button
               type="button"
@@ -368,19 +397,29 @@ export function EmployeeDashboard({
                 <Palmtree size={16} className="text-amber" />
                 Upcoming Holidays
               </h3>
-              <span className="badge badge-neutral">2026</span>
+              <span className="badge badge-neutral">{new Date().getFullYear()}</span>
             </div>
-            <ul className="holiday-list">
-              {upcomingHolidays.map((h, i) => (
-                <li key={i} className="holiday-item">
-                  <div className="holiday-info">
-                    <strong className="holiday-name">{h.name}</strong>
-                    <span className="holiday-date">{h.date}</span>
-                  </div>
-                  <span className="holiday-away-tag">{h.daysAway}</span>
-                </li>
-              ))}
-            </ul>
+            {loadingCalendar ? (
+              <p className="text-sm text-muted py-3">Loading corporate holidays…</p>
+            ) : futureHolidays.length > 0 ? (
+              <ul className="holiday-list">
+                {futureHolidays.slice(0, 3).map((h, i) => (
+                  <li key={i} className="holiday-item">
+                    <div className="holiday-info">
+                      <strong className="holiday-name">{h.title}</strong>
+                      <span className="holiday-date">{formatShortDate(h.date)}</span>
+                    </div>
+                    <span className="holiday-away-tag">{computeDaysAway(h.date)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="py-4 text-center">
+                <p className="text-sm text-muted">
+                  No upcoming corporate holidays scheduled.
+                </p>
+              </div>
+            )}
             <div className="card-divider" />
             <p className="card-footnote">
               <ShieldCheck size={13} className="text-muted inline mr-1" />
