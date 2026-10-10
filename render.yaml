@@ -3,7 +3,7 @@ services:
     name: agentos-api
     runtime: python
     plan: free
-    buildCommand: pip install uv && uv sync --frozen --no-dev && uv run alembic upgrade head && uv run python -m agentos.retrieval
+    buildCommand: pip install uv && uv sync --frozen --no-dev && uv run python -m agentos.retrieval
     startCommand: uv run uvicorn agentos.api:app --host 0.0.0.0 --port $PORT --workers 1
     healthCheckPath: /health
     envVars:
@@ -33,4 +33,3 @@ services:
         value: false
       - key: ENABLE_PUBLIC_DEMO
         value: false
-
