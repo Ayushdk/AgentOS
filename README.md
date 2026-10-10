@@ -1,5 +1,7 @@
 # AgentOS — Employee Support and HR Workflow Assistant
 
+> 📖 **Comprehensive Architecture & Technical Handbook:** Read [FULL_PROJECT.md](FULL_PROJECT.md) for the complete 17-part engineering manual, system architecture diagrams, database designs, API specifications, and 50+ interview questions.
+
 AgentOS is an independent portfolio project for a fictional fintech company, Meridian Ledger. It demonstrates evidence-backed policy answers, durable leave approvals, aggregate HR analytics, human handoff, and a real MCP client/server boundary. Every person, policy, calendar event, and operational record is synthetic.
 
 ![Employee workspace](artifacts/screenshots/01-workspace.png)

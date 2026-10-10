@@ -398,7 +398,7 @@ export function EmployeeDashboard({
               <button
                 type="button"
                 className="btn-link-sm"
-                onClick={() => onSendPrompt("Show all company policy documents")}
+                onClick={() => onNavigate("policies")}
               >
                 Explore
               </button>

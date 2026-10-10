@@ -46,8 +46,32 @@ async function runAudit() {
   await page.waitForSelector('text=Waiting for your manager');
   console.log('  - Leave request submitted successfully.');
 
+  // Check Employee Calendar
+  console.log('  - Testing Employee Calendar & Holiday detection...');
+  await page.getByRole('button', { name: 'Calendar', exact: true }).click();
+  await page.waitForSelector('.calendar-heading');
+  const calHeading = await page.locator('.calendar-heading').innerText();
+  console.log(`  - Verified Calendar View: ${calHeading}`);
+  const hasFoundationDay = await page.locator('.badge-holiday:has-text("Meridian Foundation Day")').isVisible();
+  console.log(`  - Verified Meridian Foundation Day holiday badge: ${hasFoundationDay}`);
+  await page.locator('.calendar-day-cell:has-text("18")').first().click();
+  await page.waitForSelector('.inspector-card:has-text("Meridian Foundation Day")');
+  console.log('  - Verified Day Inspector Panel opens with company holiday details.');
+
+  // Check Policy Explorer
+  console.log('  - Testing Policy Explorer & Document reading...');
+  await page.getByRole('button', { name: 'Policy Explorer', exact: true }).click();
+  await page.waitForSelector('.document-main-title');
+  const policyTitle = await page.locator('.document-main-title').innerText();
+  console.log(`  - Verified Active Policy: ${policyTitle}`);
+  await page.getByLabel('Search policies').fill('remote');
+  await page.locator('.policy-nav-item:has-text("REMOTE-1")').click();
+  await page.waitForSelector('.document-main-title:has-text("Remote work")');
+  console.log('  - Verified Policy Search & Document switching to REMOTE-1.');
+  await page.getByRole('button', { name: 'Clear' }).click();
+
   // 2. Manager Dashboard & Approval Workflow
-  console.log('[2/7] Testing Manager Dashboard & Approvals...');
+  console.log('[2/7] Testing Manager Dashboard, Direct Reports & Approvals...');
   await page.getByLabel('Demo identity').selectOption('manager');
   await page.waitForTimeout(1500);
   await page.getByRole('button', { name: 'Overview' }).click();
@@ -61,7 +85,16 @@ async function runAudit() {
   const pendingApprovalsCount = await page.locator('.stat-card').first().locator('.stat-number').innerText();
   console.log(`  - Verified Manager Approval Queue Count: ${pendingApprovalsCount}`);
 
+  // Test Manager Team Members
+  console.log('  - Testing Manager Team Directory...');
+  await page.getByRole('button', { name: 'Team Members', exact: true }).click();
+  await page.waitForSelector('.team-directory-container .data-table');
+  const reportsCount = await page.locator('.team-directory-container .data-table tbody tr').count();
+  console.log(`  - Verified Live Direct Reports Count: ${reportsCount} engineers`);
+
   // Test approval in review-card
+  await page.getByRole('button', { name: 'Manager approvals', exact: true }).click();
+  await page.waitForSelector('.card');
   const reviewCard = page.locator('.review-card').first();
   if (await reviewCard.isVisible()) {
     console.log('  - Testing Approval Action on pending request...');

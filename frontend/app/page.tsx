@@ -34,6 +34,9 @@ import { ReportChart } from "@/components/report-chart";
 import { EmployeeDashboard } from "@/components/dashboard/employee-dashboard";
 import { ManagerDashboard } from "@/components/dashboard/manager-dashboard";
 import { HRDashboard } from "@/components/dashboard/hr-dashboard";
+import { CalendarView } from "@/components/calendar/calendar-view";
+import { PolicyExplorer } from "@/components/policies/policy-explorer";
+import { TeamDirectory } from "@/components/team/team-directory";
 import {
   api,
   setBearer,
@@ -49,6 +52,9 @@ type View =
   | "overview"
   | "assistant"
   | "leave"
+  | "calendar"
+  | "policies"
+  | "team"
   | "manager"
   | "analytics"
   | "handoff"
@@ -69,16 +75,16 @@ const employeeNav = [
   { id: "overview" as View, label: "Overview", icon: Home },
   { id: "assistant" as View, label: "AI Assistant", ariaLabel: "Employee assistant", icon: MessageSquare },
   { id: "leave" as View, label: "My leave", icon: CalendarDays },
-  { id: "calendar" as any, label: "Calendar", icon: CalendarDays },
-  { id: "policies" as any, label: "Policy Explorer", icon: BookOpen },
+  { id: "calendar" as View, label: "Calendar", icon: CalendarDays },
+  { id: "policies" as View, label: "Policy Explorer", icon: BookOpen },
 ];
 
 const managerNav = [
   { id: "overview" as View, label: "Overview", icon: Home },
   { id: "assistant" as View, label: "AI Assistant", ariaLabel: "Manager assistant", icon: MessageSquare },
   { id: "manager" as View, label: "Manager approvals", icon: Users },
-  { id: "calendar" as any, label: "Team Calendar", icon: CalendarDays },
-  { id: "team" as any, label: "Team Members", icon: Users },
+  { id: "calendar" as View, label: "Team Calendar", icon: CalendarDays },
+  { id: "team" as View, label: "Team Members", icon: Users },
 ];
 
 const hrNav = [
@@ -469,20 +475,6 @@ export default function Page() {
     }
   }
   const navigate = (v: any) => {
-    if (v === "calendar") {
-      setView("leave");
-      setNotice("Showing your leave calendar and upcoming time away.");
-      setMobile(false);
-      return;
-    }
-    if (v === "policies") {
-      send("Show all company policy documents and guidelines");
-      return;
-    }
-    if (v === "team") {
-      send("List all direct reports in my engineering team");
-      return;
-    }
     setView(v);
     setMobile(false);
     setNotice("");
@@ -922,30 +914,42 @@ export default function Page() {
                       ? "A little support. More momentum."
                       : view === "leave"
                         ? "Time away, made clear."
-                        : view === "manager"
-                          ? "A thoughtful second look."
-                          : view === "analytics"
-                            ? "The people behind the numbers."
-                            : view === "handoff"
-                              ? "Keep the conversation moving."
-                              : view === "execution"
-                                ? "Trust, with a paper trail."
-                                : "See AgentOS in action."}
+                        : view === "calendar"
+                          ? "Company & Team Calendar."
+                          : view === "policies"
+                            ? "Company Policies & Guidelines."
+                            : view === "team"
+                              ? "Engineering Team Directory."
+                              : view === "manager"
+                                ? "A thoughtful second look."
+                                : view === "analytics"
+                                  ? "The people behind the numbers."
+                                  : view === "handoff"
+                                    ? "Keep the conversation moving."
+                                    : view === "execution"
+                                      ? "Trust, with a paper trail."
+                                      : "See AgentOS in action."}
                   </h1>
                   <p>
                     {view === "assistant"
                       ? "Your policies, plans, and next steps. All in one helpful place."
                       : view === "leave"
                         ? "Track your requests and see exactly what happens next."
-                        : view === "manager"
-                          ? "Review direct-report requests. Every decision is yours."
-                          : view === "analytics"
-                            ? "Explore aggregate workforce data with transparent definitions."
-                            : view === "handoff"
-                              ? "Evidence and context for the questions that need a human."
-                              : view === "execution"
-                                ? "Factual tool activity and measured evaluation results."
-                                : "A recorded walkthrough, available even when live services are offline."}
+                        : view === "calendar"
+                          ? "Official company holidays, scheduled events, and approved time-off."
+                          : view === "policies"
+                            ? "Browse verified internal policies and ask grounded compliance questions."
+                            : view === "team"
+                              ? "Active engineering roster and authorized reporting lines."
+                              : view === "manager"
+                                ? "Review direct-report requests. Every decision is yours."
+                                : view === "analytics"
+                                  ? "Explore aggregate workforce data with transparent definitions."
+                                  : view === "handoff"
+                                    ? "Evidence and context for the questions that need a human."
+                                    : view === "execution"
+                                      ? "Factual tool activity and measured evaluation results."
+                                      : "A recorded walkthrough, available even when live services are offline."}
                   </p>
                 </div>
                 <span className="workspace-badge">
@@ -1368,6 +1372,28 @@ export default function Page() {
                   </div>
                 </>
               )}
+              {view === "calendar" && person && (
+                <CalendarView
+                  person={person}
+                  onNavigateLeave={() => navigate("leave")}
+                />
+              )}
+              {view === "policies" && person && (
+                <PolicyExplorer
+                  person={person}
+                  onAskQuestion={(q) => send(q)}
+                  busy={busy}
+                />
+              )}
+              {view === "team" && person &&
+                (person.role !== "manager" ? (
+                  locked("Manager")
+                ) : (
+                  <TeamDirectory
+                    person={person}
+                    onSendPrompt={(p) => send(p)}
+                  />
+                ))}
               {view === "manager" &&
                 (person?.role !== "manager" ? (
                   locked("Manager")

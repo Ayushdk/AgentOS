@@ -21,9 +21,20 @@ from .db import engine, transaction
 from .errors import DomainError
 from .graph import build_graph
 from .mcp_client import connect_mcp
-from .models import AgentRun, AuditEvent, Employee, Leave, Ticket, now
+from .models import (
+    AgentRun,
+    AuditEvent,
+    CalendarEvent,
+    Employee,
+    Holiday,
+    Leave,
+    PolicyChunk,
+    PolicyDocument,
+    Ticket,
+    now,
+)
 from .public_demo import select_demo_persona
-from .retrieval import resolve_citations
+from .retrieval import eligible, resolve_citations
 from .seed import DEMO_IDS, seed_tenant
 from .services import audit, authorize_review, confirm_approval, pack_leave, scope
 
@@ -449,6 +460,136 @@ def resolve_ticket(ticket_id: UUID, ctx: Identity = Depends(identity)):
         row.status = "resolved"
         audit(s, ctx, "handoff.resolved", {"ticket_id": row.id})
         return {"id": row.id, "status": row.status}
+
+
+@app.get("/calendar")
+def get_calendar(ctx: Identity = Depends(identity)):
+    with transaction() as s:
+        holidays = [
+            {"date": h.day.isoformat(), "title": h.title}
+            for h in s.scalars(select(Holiday).order_by(Holiday.day))
+        ]
+        my_leaves = [
+            pack_leave(l)
+            for l in s.scalars(
+                scope(ctx, Leave).order_by(Leave.start_date.desc())
+            )
+        ]
+        my_events = [
+            {
+                "id": e.id,
+                "title": e.title,
+                "starts_at": e.starts_at.isoformat(),
+                "ends_at": e.ends_at.isoformat(),
+            }
+            for e in s.scalars(
+                select(CalendarEvent).where(
+                    CalendarEvent.tenant_id == ctx.tenant_id,
+                    CalendarEvent.employee_id == ctx.employee_id,
+                ).order_by(CalendarEvent.starts_at)
+            )
+        ]
+        team_leaves = []
+        if ctx.role == "manager":
+            rows = s.execute(
+                select(Leave, Employee)
+                .join(Employee, (Employee.id == Leave.employee_id) & (Employee.tenant_id == Leave.tenant_id))
+                .where(
+                    Leave.tenant_id == ctx.tenant_id,
+                    Employee.manager_id == ctx.employee_id,
+                    Leave.status.in_(["pending", "approved"]),
+                )
+                .order_by(Leave.start_date)
+            )
+            team_leaves = [
+                {**pack_leave(leave), "employee_name": emp.name}
+                for leave, emp in rows
+            ]
+        return {
+            "holidays": holidays,
+            "leaves": my_leaves,
+            "events": my_events,
+            "team_leaves": team_leaves,
+        }
+
+
+@app.get("/manager/team")
+def get_manager_team(ctx: Identity = Depends(identity)):
+    require_role(ctx, "manager")
+    with transaction() as s:
+        members = s.scalars(
+            select(Employee)
+            .where(Employee.tenant_id == ctx.tenant_id, Employee.manager_id == ctx.employee_id)
+            .order_by(Employee.id)
+        ).all()
+        return [
+            {
+                "id": m.id,
+                "name": m.name,
+                "department": m.department,
+                "role": m.role,
+                "joined_on": m.joined_on.isoformat(),
+                "exited_on": m.exited_on.isoformat() if m.exited_on else None,
+                "status": "Exited" if m.exited_on else "Active",
+            }
+            for m in members
+        ]
+
+
+@app.get("/policies")
+def list_policies(ctx: Identity = Depends(identity)):
+    as_of = now().date()
+    with transaction() as s:
+        docs = s.scalars(
+            select(PolicyDocument).where(PolicyDocument.fixture == False).order_by(PolicyDocument.id)
+        ).all()
+        result = []
+        for d in docs:
+            if eligible(d, ctx.role, as_of, fixtures=False):
+                section_count = s.scalar(
+                    select(func.count(PolicyChunk.id)).where(PolicyChunk.document_id == d.id)
+                )
+                result.append({
+                    "id": d.id,
+                    "title": d.title,
+                    "version": d.version,
+                    "effective_date": d.effective_date.isoformat(),
+                    "expires_on": d.expires_on.isoformat() if d.expires_on else None,
+                    "audience": d.audience,
+                    "sections_count": section_count or 0,
+                })
+        return result
+
+
+@app.get("/policies/{policy_id}")
+def get_policy(policy_id: str, ctx: Identity = Depends(identity)):
+    as_of = now().date()
+    with transaction() as s:
+        doc = s.get(PolicyDocument, policy_id)
+        if not doc or not eligible(doc, ctx.role, as_of, fixtures=False):
+            raise DomainError("not_found", "Policy not found or inaccessible for your role.", 404)
+        chunks = s.scalars(
+            select(PolicyChunk).where(PolicyChunk.document_id == policy_id).order_by(PolicyChunk.id)
+        ).all()
+        return {
+            "id": doc.id,
+            "title": doc.title,
+            "version": doc.version,
+            "effective_date": doc.effective_date.isoformat(),
+            "expires_on": doc.expires_on.isoformat() if doc.expires_on else None,
+            "audience": doc.audience,
+            "sections": [
+                {
+                    "id": c.id,
+                    "section_id": c.section_id,
+                    "heading": c.heading,
+                    "text": c.text,
+                    "claim_key": c.claim_key,
+                    "claim_value": c.claim_value,
+                }
+                for c in chunks
+            ],
+        }
 
 
 @app.get("/citations/{citation_id}")

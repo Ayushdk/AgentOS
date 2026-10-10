@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Users,
   CheckCircle2,
@@ -17,7 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Identity, Leave } from "@/lib/api";
+import { api, type Identity, type Leave, type TeamMember } from "@/lib/api";
 
 interface ManagerDashboardProps {
   person: Identity;
@@ -28,15 +28,16 @@ interface ManagerDashboardProps {
   busy: boolean;
 }
 
-const mockTeamMembers = [
-  { id: "E001", name: "Ari Sen", role: "Software Engineer", status: "Active", avatar: "AS" },
-  { id: "E002", name: "Mira Sen", role: "Frontend Engineer", status: "On Leave", avatar: "MS" },
-  { id: "E003", name: "Dev Sen", role: "Backend Engineer", status: "Active", avatar: "DS" },
-  { id: "E004", name: "Leena Sen", role: "QA Engineer", status: "Active", avatar: "LS" },
-  { id: "E005", name: "Rohan Sen", role: "DevOps Engineer", status: "Active", avatar: "RS" },
-  { id: "E006", name: "Nila Sen", role: "Data Engineer", status: "Active", avatar: "NS" },
-  { id: "E007", name: "Kiran Sen", role: "Full Stack Engineer", status: "Active", avatar: "KS" },
-  { id: "E009", name: "Samar Sen", role: "Systems Engineer", status: "Active", avatar: "SS" },
+const defaultTeamMembers = [
+  { id: "E001", name: "Ari Sen", role: "Software Engineer", status: "Active" as const, joined_on: "2025-08-02", exited_on: null, department: "Engineering" },
+  { id: "E002", name: "Mira Sen", role: "Frontend Engineer", status: "Active" as const, joined_on: "2026-06-03", exited_on: null, department: "Engineering" },
+  { id: "E003", name: "Dev Sen", role: "Backend Engineer", status: "Active" as const, joined_on: "2024-04-04", exited_on: null, department: "Engineering" },
+  { id: "E004", name: "Leena Sen", role: "QA Engineer", status: "Active" as const, joined_on: "2025-02-05", exited_on: null, department: "Engineering" },
+  { id: "E005", name: "Rohan Sen", role: "DevOps Engineer", status: "Active" as const, joined_on: "2026-09-06", exited_on: null, department: "Engineering" },
+  { id: "E006", name: "Nila Sen", role: "Data Engineer", status: "Active" as const, joined_on: "2024-07-07", exited_on: null, department: "Engineering" },
+  { id: "E007", name: "Kiran Sen", role: "Full Stack Engineer", status: "Active" as const, joined_on: "2025-05-08", exited_on: null, department: "Engineering" },
+  { id: "E008", name: "Isha Sen", role: "Software Engineer", status: "Exited" as const, joined_on: "2026-03-09", exited_on: "2026-08-28", department: "Engineering" },
+  { id: "E009", name: "Samar Sen", role: "Systems Engineer", status: "Active" as const, joined_on: "2024-01-10", exited_on: null, department: "Engineering" },
 ];
 
 const availabilityTimeline = [
@@ -71,6 +72,15 @@ export function ManagerDashboard({
 }: ManagerDashboardProps) {
   const [promptText, setPromptText] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(defaultTeamMembers);
+
+  useEffect(() => {
+    api<TeamMember[]>("/manager/team")
+      .then((data) => {
+        if (data && data.length > 0) setTeamMembers(data);
+      })
+      .catch(() => {});
+  }, []);
 
   const firstName = person.name.split(" ")[0] || "Tara";
 
@@ -155,17 +165,19 @@ export function ManagerDashboard({
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">8</span>
-            <span className="stat-subtext">in your team</span>
+            <span className="stat-number">{teamMembers.length}</span>
+            <span className="stat-subtext">direct reports</span>
           </div>
           <div className="stat-tag-row">
-            <span className="badge badge-blue-subtle">Engineering · Department 1</span>
+            <span className="badge badge-blue-subtle">
+              {teamMembers.filter((m) => m.status === "Active").length} active · Engineering
+            </span>
           </div>
           <div className="stat-footer-link">
             <button
               type="button"
               className="btn-link"
-              onClick={() => onSendPrompt("List my direct reports in engineering")}
+              onClick={() => onNavigate("team")}
             >
               View team directory <ArrowRight size={13} />
             </button>
@@ -181,17 +193,19 @@ export function ManagerDashboard({
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">7</span>
+            <span className="stat-number">
+              {teamMembers.filter((m) => m.status === "Active").length}
+            </span>
             <span className="stat-subtext">active on duty</span>
           </div>
           <div className="stat-tag-row">
-            <span className="badge badge-neutral">1 member on scheduled sick leave</span>
+            <span className="badge badge-neutral">Full schedule tracked</span>
           </div>
           <div className="stat-footer-link">
             <button
               type="button"
               className="btn-link"
-              onClick={() => onNavigate("manager")}
+              onClick={() => onNavigate("calendar")}
             >
               Check team schedule <ArrowRight size={13} />
             </button>
@@ -376,14 +390,25 @@ export function ManagerDashboard({
             <div className="card-header-simple">
               <h3 className="card-heading-sm">
                 <Users size={16} className="text-purple" />
-                Engineering Team (8)
+                Engineering Team ({teamMembers.length})
               </h3>
+              <button
+                type="button"
+                className="btn-link-sm"
+                onClick={() => onNavigate("team")}
+              >
+                All
+              </button>
             </div>
             <div className="team-roster-list">
-              {mockTeamMembers.map((m) => (
+              {teamMembers.slice(0, 8).map((m) => (
                 <div key={m.id} className="team-roster-item">
                   <div className="avatar avatar-sm avatar-neutral">
-                    {m.avatar}
+                    {m.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)}
                   </div>
                   <div className="team-roster-meta">
                     <strong>{m.name}</strong>
@@ -391,7 +416,7 @@ export function ManagerDashboard({
                   </div>
                   <span
                     className={`badge badge-sm ${
-                      m.status === "Active" ? "badge-success" : "badge-amber"
+                      m.status === "Active" ? "badge-success" : "badge-neutral"
                     }`}
                   >
                     {m.status}

@@ -183,14 +183,14 @@ export function HRDashboard({
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">4%</span>
-            <span className="stat-subtext">within 2026</span>
+            <span className="stat-number">6%</span>
+            <span className="stat-subtext">3 exits / 50 records</span>
           </div>
           <div className="stat-tag-row">
-            <span className="badge badge-success">96% retention target</span>
+            <span className="badge badge-success">94% annual retention</span>
           </div>
           <div className="stat-footer-text">
-            <span>3 historic exits tracked</span>
+            <span>47 active · 3 historic departures</span>
           </div>
         </div>
 
