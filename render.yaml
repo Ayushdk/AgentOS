@@ -3,6 +3,8 @@ services:
     name: agentos-api
     runtime: python
     plan: free
+    # Supabase migrations are applied separately with the setup account.
+    # The deployed runtime role intentionally cannot manage the schema.
     buildCommand: pip install uv && uv sync --frozen --no-dev && uv run python -m agentos.retrieval
     startCommand: uv run uvicorn agentos.api:app --host 0.0.0.0 --port $PORT --workers 1
     healthCheckPath: /health

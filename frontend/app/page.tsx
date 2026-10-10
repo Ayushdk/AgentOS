@@ -26,10 +26,14 @@ import {
   CheckCheck,
   AlertCircle,
   FileText,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ReportChart } from "@/components/report-chart";
+import { EmployeeDashboard } from "@/components/dashboard/employee-dashboard";
+import { ManagerDashboard } from "@/components/dashboard/manager-dashboard";
+import { HRDashboard } from "@/components/dashboard/hr-dashboard";
 import {
   api,
   setBearer,
@@ -42,6 +46,7 @@ import {
 import { supabase } from "@/lib/supabase";
 
 type View =
+  | "overview"
   | "assistant"
   | "leave"
   | "manager"
@@ -49,7 +54,9 @@ type View =
   | "handoff"
   | "execution"
   | "replay";
+
 const navigation = [
+  { id: "overview", label: "Overview", icon: Home },
   { id: "assistant", label: "Employee assistant", icon: MessageSquare },
   { id: "leave", label: "My leave", icon: CalendarDays },
   { id: "manager", label: "Manager approvals", icon: Users },
@@ -57,6 +64,30 @@ const navigation = [
   { id: "handoff", label: "HR handoff", icon: Inbox },
   { id: "execution", label: "Execution & evaluation", icon: Activity },
 ] as const;
+
+const employeeNav = [
+  { id: "overview" as View, label: "Overview", icon: Home },
+  { id: "assistant" as View, label: "AI Assistant", ariaLabel: "Employee assistant", icon: MessageSquare },
+  { id: "leave" as View, label: "My leave", icon: CalendarDays },
+  { id: "calendar" as any, label: "Calendar", icon: CalendarDays },
+  { id: "policies" as any, label: "Policy Explorer", icon: BookOpen },
+];
+
+const managerNav = [
+  { id: "overview" as View, label: "Overview", icon: Home },
+  { id: "assistant" as View, label: "AI Assistant", ariaLabel: "Manager assistant", icon: MessageSquare },
+  { id: "manager" as View, label: "Manager approvals", icon: Users },
+  { id: "calendar" as any, label: "Team Calendar", icon: CalendarDays },
+  { id: "team" as any, label: "Team Members", icon: Users },
+];
+
+const hrNav = [
+  { id: "overview" as View, label: "Overview", icon: Home },
+  { id: "assistant" as View, label: "AI Assistant", ariaLabel: "HR assistant", icon: MessageSquare },
+  { id: "analytics" as View, label: "HR analytics", icon: ChartColumn },
+  { id: "handoff" as View, label: "HR handoff", icon: Inbox },
+  { id: "execution" as View, label: "Execution & evaluation", icon: Activity },
+];
 const prompts = [
   {
     icon: BookOpen,
@@ -138,7 +169,7 @@ function Source({ source }: { source: Citation }) {
 }
 
 export default function Page() {
-  const [view, setView] = useState<View>("assistant");
+  const [view, setView] = useState<View>("overview");
   const [person, setPerson] = useState<Identity | null>(null);
   const [health, setHealth] = useState<any>(null);
   const [runs, setRuns] = useState<Run[]>([]);
@@ -205,6 +236,17 @@ export default function Page() {
           const p = await api<Identity>("/auth/me");
           setPerson(p);
           await loadData();
+          if (p.role === "manager") {
+            loadManagerQueue().catch(() => {});
+          }
+          if (p.role === "hr") {
+            api("/tickets").then(setTickets).catch(() => {});
+            api("/analytics", {
+              report: reportKind,
+              start_date: from,
+              end_date: to,
+            }).then(setReport).catch(() => {});
+          }
         } catch {
           if (h.auth_mode === "development") {
             const p = await api<Identity>("/auth/demo", {
@@ -238,13 +280,13 @@ export default function Page() {
     setError("");
     (async () => {
       try {
-        if (view === "leave") await loadData();
-        if (view === "manager" && person.role === "manager") {
+        if (view === "leave" || (view === "overview" && person.role === "employee")) await loadData();
+        if ((view === "manager" || (view === "overview" && person.role === "manager")) && person.role === "manager") {
           await loadManagerQueue();
         }
-        if (view === "handoff" && person.role === "hr")
+        if ((view === "handoff" || (view === "overview" && person.role === "hr")) && person.role === "hr")
           setTickets(await api("/tickets"));
-        if (view === "analytics" && person.role === "hr")
+        if ((view === "analytics" || (view === "overview" && person.role === "hr")) && person.role === "hr")
           setReport(
             await api("/analytics", {
               report: reportKind,
@@ -284,6 +326,17 @@ export default function Page() {
       setActive(null);
       setEvents([]);
       await loadData();
+      if (p.role === "manager") {
+        await loadManagerQueue().catch(() => {});
+      }
+      if (p.role === "hr") {
+        api("/tickets").then(setTickets).catch(() => {});
+        api("/analytics", {
+          report: reportKind,
+          start_date: from,
+          end_date: to,
+        }).then(setReport).catch(() => {});
+      }
       setNotice(
         "Switched to " + p.name + ". Your visitor workspace stays isolated.",
       );
@@ -377,9 +430,21 @@ export default function Page() {
       });
       if (error) throw error;
       setBearer(data.session?.access_token ?? null);
-      setPerson(await api("/auth/me"));
+      const me = await api<Identity>("/auth/me");
+      setPerson(me);
       setPassword("");
       await loadData();
+      if (me.role === "manager") {
+        await loadManagerQueue().catch(() => {});
+      }
+      if (me.role === "hr") {
+        api("/tickets").then(setTickets).catch(() => {});
+        api("/analytics", {
+          report: reportKind,
+          start_date: from,
+          end_date: to,
+        }).then(setReport).catch(() => {});
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -394,7 +459,8 @@ export default function Page() {
       const { data, error } = await client.auth.signInAnonymously();
       if (error) throw error;
       setBearer(data.session?.access_token ?? null);
-      setPerson(await api("/auth/demo/persona", { persona: "employee" }));
+      const me = await api<Identity>("/auth/demo/persona", { persona: "employee" });
+      setPerson(me);
       await loadData();
     } catch (e) {
       setError((e as Error).message);
@@ -402,7 +468,21 @@ export default function Page() {
       setBusy(false);
     }
   }
-  const navigate = (v: View) => {
+  const navigate = (v: any) => {
+    if (v === "calendar") {
+      setView("leave");
+      setNotice("Showing your leave calendar and upcoming time away.");
+      setMobile(false);
+      return;
+    }
+    if (v === "policies") {
+      send("Show all company policy documents and guidelines");
+      return;
+    }
+    if (v === "team") {
+      send("List all direct reports in my engineering team");
+      return;
+    }
     setView(v);
     setMobile(false);
     setNotice("");
@@ -615,33 +695,64 @@ export default function Page() {
   return (
     <div className="app-shell">
       <aside className={"sidebar " + (mobile ? "open" : "")}>
-        <a
-          className="brand"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("assistant");
-          }}
-        >
-          <span className="brand-icon">
-            <Sparkles size={21} />
-          </span>
-          Agent<span>OS</span>
-          <span className="brand-dot" />
-        </a>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+          <a
+            className="brand"
+            href="#"
+            style={{ marginBottom: 0 }}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("overview");
+            }}
+          >
+            <span className="brand-icon">
+              <Sparkles size={21} />
+            </span>
+            Agent<span>OS</span>
+            <span className="brand-dot" />
+          </a>
+          {mobile && (
+            <button
+              className="mobile-close"
+              aria-label="Close navigation"
+              onClick={() => setMobile(false)}
+              style={{ background: "none", border: "none", color: "#64748b", padding: 6, cursor: "pointer" }}
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
         <div className="workspace">
           <div className="company-logo">M</div>
           <div>
             <strong>Meridian Ledger</strong>
-            <span>Employee workspace</span>
+            <span>
+              {person?.role === "manager"
+                ? "Team workspace"
+                : person?.role === "hr"
+                  ? "People Operations"
+                  : "Employee workspace"}
+            </span>
           </div>
           <ChevronRight size={14} />
         </div>
-        <p className="nav-label">WORKSPACE</p>
+        <p className="nav-label">
+          {person?.role === "manager"
+            ? "TEAM WORKSPACE"
+            : person?.role === "hr"
+              ? "PEOPLE OPERATIONS"
+              : "MY WORKSPACE"}
+        </p>
         <nav>
-          {navigation.map((n) => (
+          {(person?.role === "manager"
+            ? managerNav
+            : person?.role === "hr"
+              ? hrNav
+              : employeeNav
+          ).map((n) => (
             <button
               key={n.id}
+              aria-label={n.ariaLabel || n.label}
               className={"nav-item " + (view === n.id ? "active" : "")}
               onClick={() => navigate(n.id)}
             >
@@ -650,6 +761,49 @@ export default function Page() {
               {n.id === "manager" && queue.length > 0 && <b>{queue.length}</b>}
             </button>
           ))}
+          {(health?.auth_mode === "development" || person?.demo) && (
+            <div style={{ marginTop: 14 }}>
+              <p
+                className="nav-label"
+                style={{ fontSize: "8px", opacity: 0.7, margin: "8px 0 4px" }}
+              >
+                DEV ROLE ACCESS TEST
+              </p>
+              {person?.role !== "hr" && (
+                <button
+                  className={
+                    "nav-item " + (view === "analytics" ? "active" : "")
+                  }
+                  onClick={() => navigate("analytics")}
+                >
+                  <ChartColumn size={18} />
+                  <span>HR analytics</span>
+                </button>
+              )}
+              {person?.role !== "hr" && (
+                <button
+                  className={
+                    "nav-item " + (view === "handoff" ? "active" : "")
+                  }
+                  onClick={() => navigate("handoff")}
+                >
+                  <Inbox size={18} />
+                  <span>HR handoff</span>
+                </button>
+              )}
+              {person?.role !== "manager" && (
+                <button
+                  className={
+                    "nav-item " + (view === "manager" ? "active" : "")
+                  }
+                  onClick={() => navigate("manager")}
+                >
+                  <Users size={18} />
+                  <span>Manager approvals</span>
+                </button>
+              )}
+            </div>
+          )}
         </nav>
         <div className="sidebar-lower">
           <div className="demo-note">
@@ -661,18 +815,32 @@ export default function Page() {
             </button>
           </div>
           <div className="profile">
-            <div className="avatar">
+            <div
+              className={`avatar ${
+                person?.role === "manager"
+                  ? "avatar-purple"
+                  : person?.role === "hr"
+                    ? "avatar-rose"
+                    : "avatar-indigo"
+              }`}
+            >
               {person?.name
                 .split(" ")
                 .map((n) => n[0])
-                .join("") || "ML"}
+                .join("")
+                .slice(0, 2)
+                .toUpperCase() || "ML"}
             </div>
             <div>
               <strong>{person?.name || "Your workspace"}</strong>
               <span>
                 {person?.role === "hr"
-                  ? "HR analyst"
-                  : person?.role || "Not signed in"}
+                  ? "HR Analyst · People Ops"
+                  : person?.role === "manager"
+                    ? "Manager · Engineering"
+                    : person?.role === "employee"
+                      ? "Employee · Engineering"
+                      : "Not signed in"}
               </span>
             </div>
           </div>
@@ -708,7 +876,13 @@ export default function Page() {
             <strong>
               {view === "replay"
                 ? "Recorded demo"
-                : navigation.find((n) => n.id === view)?.label}
+                : view === "overview"
+                  ? person?.role === "manager"
+                    ? "Team Workspace"
+                    : person?.role === "hr"
+                      ? "People Operations"
+                      : "My Workspace"
+                  : navigation.find((n) => n.id === view)?.label}
             </strong>
           </div>
           <div className="topbar-right">
@@ -738,46 +912,48 @@ export default function Page() {
           </div>
         </header>
         <main>
-          <div className="page-heading">
-            <div className="breadcrumb-label">PEOPLE & POSSIBILITIES</div>
-            <div className="heading-row">
-              <div>
-                <h1>
-                  {view === "assistant"
-                    ? "A little support. More momentum."
-                    : view === "leave"
-                      ? "Time away, made clear."
-                      : view === "manager"
-                        ? "A thoughtful second look."
-                        : view === "analytics"
-                          ? "The people behind the numbers."
-                          : view === "handoff"
-                            ? "Keep the conversation moving."
-                            : view === "execution"
-                              ? "Trust, with a paper trail."
-                              : "See AgentOS in action."}
-                </h1>
-                <p>
-                  {view === "assistant"
-                    ? "Your policies, plans, and next steps. All in one helpful place."
-                    : view === "leave"
-                      ? "Track your requests and see exactly what happens next."
-                      : view === "manager"
-                        ? "Review direct-report requests. Every decision is yours."
-                        : view === "analytics"
-                          ? "Explore aggregate workforce data with transparent definitions."
-                          : view === "handoff"
-                            ? "Evidence and context for the questions that need a human."
-                            : view === "execution"
-                              ? "Factual tool activity and measured evaluation results."
-                              : "A recorded walkthrough, available even when live services are offline."}
-                </p>
+          {view !== "overview" && (
+            <div className="page-heading">
+              <div className="breadcrumb-label">PEOPLE & POSSIBILITIES</div>
+              <div className="heading-row">
+                <div>
+                  <h1>
+                    {view === "assistant"
+                      ? "A little support. More momentum."
+                      : view === "leave"
+                        ? "Time away, made clear."
+                        : view === "manager"
+                          ? "A thoughtful second look."
+                          : view === "analytics"
+                            ? "The people behind the numbers."
+                            : view === "handoff"
+                              ? "Keep the conversation moving."
+                              : view === "execution"
+                                ? "Trust, with a paper trail."
+                                : "See AgentOS in action."}
+                  </h1>
+                  <p>
+                    {view === "assistant"
+                      ? "Your policies, plans, and next steps. All in one helpful place."
+                      : view === "leave"
+                        ? "Track your requests and see exactly what happens next."
+                        : view === "manager"
+                          ? "Review direct-report requests. Every decision is yours."
+                          : view === "analytics"
+                            ? "Explore aggregate workforce data with transparent definitions."
+                            : view === "handoff"
+                              ? "Evidence and context for the questions that need a human."
+                              : view === "execution"
+                                ? "Factual tool activity and measured evaluation results."
+                                : "A recorded walkthrough, available even when live services are offline."}
+                  </p>
+                </div>
+                <span className="workspace-badge">
+                  <Database size={14} /> Synthetic workspace
+                </span>
               </div>
-              <span className="workspace-badge">
-                <Database size={14} /> Synthetic workspace
-              </span>
             </div>
-          </div>
+          )}
           {error && (
             <div className="banner error" role="alert">
               <AlertCircle size={17} />
@@ -841,6 +1017,48 @@ export default function Page() {
             </div>
           ) : (
             <>
+              {view === "overview" && person && (
+                person.role === "manager" ? (
+                  <ManagerDashboard
+                    person={person}
+                    queue={queue}
+                    onReview={review}
+                    onNavigate={navigate}
+                    onSendPrompt={send}
+                    busy={busy}
+                  />
+                ) : person.role === "hr" ? (
+                  <HRDashboard
+                    person={person}
+                    tickets={tickets}
+                    report={report}
+                    onResolveTicket={async (id) => {
+                      setBusy(true);
+                      try {
+                        await api("/tickets/" + id + "/resolve");
+                        setTickets(await api("/tickets"));
+                        setNotice("Ticket resolved.");
+                      } catch (e) {
+                        setError((e as Error).message);
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                    onNavigate={navigate}
+                    onSendPrompt={send}
+                    busy={busy}
+                  />
+                ) : (
+                  <EmployeeDashboard
+                    person={person}
+                    balances={balances}
+                    leaves={leaves}
+                    onNavigate={navigate}
+                    onSendPrompt={send}
+                    busy={busy}
+                  />
+                )
+              )}
               {view === "assistant" && (
                 <div className="assistant-grid">
                   <section className="conversation-column">

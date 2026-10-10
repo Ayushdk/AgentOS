@@ -258,3 +258,115 @@ def test_sql_catalog_and_custom_functions_rejected():
     ]:
         with pytest.raises(DomainError):
             validate_sql(sql)
+
+
+def test_supabase_unmapped_subject_raises_employee_mapping_error(monkeypatch):
+    private = ec.generate_private_key(ec.SECP256R1())
+    unmapped_subject = uid()
+    monkeypatch.setattr(
+        auth,
+        "jwks",
+        lambda: SimpleNamespace(get_signing_key_from_jwt=lambda _: SimpleNamespace(key=private.public_key())),
+    )
+    claims = {
+        "sub": unmapped_subject,
+        "iss": settings().supabase_url + "/auth/v1",
+        "aud": "authenticated",
+        "exp": now() + timedelta(minutes=5),
+    }
+    token = jwt.encode(claims, private, algorithm="ES256")
+    with pytest.raises(DomainError) as exc_info:
+        auth.supabase_identity(token)
+    assert exc_info.value.code == "unprovisioned"
+    assert exc_info.value.message == "Account has no employee mapping."
+    assert exc_info.value.status == 403
+
+
+def test_supabase_mapped_subject_resolves_intended_employee(monkeypatch):
+    from agentos.api import app
+
+    private = ec.generate_private_key(ec.SECP256R1())
+    test_subject = "f431697e-adba-45a6-a2d8-af5dcd1ded30"
+    monkeypatch.setattr(
+        auth,
+        "jwks",
+        lambda: SimpleNamespace(get_signing_key_from_jwt=lambda _: SimpleNamespace(key=private.public_key())),
+    )
+    cfg = settings()
+    monkeypatch.setattr(cfg, "auth_mode", "supabase")
+
+    claims = {
+        "sub": test_subject,
+        "iss": settings().supabase_url + "/auth/v1",
+        "aud": "authenticated",
+        "exp": now() + timedelta(minutes=5),
+        "role": "attacker_spoofed_admin",
+        "employee_id": "E999",
+    }
+    token = jwt.encode(claims, private, algorithm="ES256")
+
+    # Direct resolution check
+    resolved = auth.supabase_identity(token)
+    assert resolved.employee_id == "E001"
+    assert resolved.role == "employee"
+    assert resolved.name == "Ari Sen"
+    assert resolved.tenant_id == "00000000-0000-0000-0000-000000000001"
+
+    # API endpoint check
+    with TestClient(app) as client:
+        res = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+        assert res.status_code == 200
+        data = res.json()
+        assert data["employee_id"] == "E001"
+        assert data["role"] == "employee"
+        assert data["name"] == "Ari Sen"
+        assert data["tenant_id"] == "00000000-0000-0000-0000-000000000001"
+
+
+def test_unknown_supabase_user_blocked_at_api_boundary(monkeypatch):
+    from agentos.api import app
+
+    private = ec.generate_private_key(ec.SECP256R1())
+    unknown_subject = uid()
+    monkeypatch.setattr(
+        auth,
+        "jwks",
+        lambda: SimpleNamespace(get_signing_key_from_jwt=lambda _: SimpleNamespace(key=private.public_key())),
+    )
+    cfg = settings()
+    monkeypatch.setattr(cfg, "auth_mode", "supabase")
+
+    claims = {
+        "sub": unknown_subject,
+        "iss": settings().supabase_url + "/auth/v1",
+        "aud": "authenticated",
+        "exp": now() + timedelta(minutes=5),
+    }
+    token = jwt.encode(claims, private, algorithm="ES256")
+
+    with TestClient(app) as client:
+        res = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+        assert res.status_code == 403
+        data = res.json()
+        assert data["error"]["code"] == "unprovisioned"
+        assert data["error"]["message"] == "Account has no employee mapping."
+
+
+def test_employee_account_data_isolation():
+    ari = auth.resolve_identity("00000000-0000-0000-0000-000000000001", "E001")
+    other = auth.resolve_identity("00000000-0000-0000-0000-000000000001", "E002")
+
+    ari_balances = services.get_my_leave_balance(ari)
+    other_balances = services.get_my_leave_balance(other)
+
+    assert len(ari_balances["balances"]) == 2
+    assert len(other_balances["balances"]) == 2
+    assert any(b["leave_type"] == "annual" and b["remaining"] == 1 for b in other_balances["balances"])
+    assert any(b["leave_type"] == "annual" and b["remaining"] == 18 for b in ari_balances["balances"])
+
+    # Verify other employee cannot confirm an approval belonging to Ari
+    draft = services.prepare_leave_request(ari, "2026-12-14", "2026-12-15", "annual", uid())
+    with pytest.raises(DomainError) as exc_info:
+        services.confirm_approval(other, draft["approval_id"], True)
+    assert exc_info.value.code == "not_found"
+
