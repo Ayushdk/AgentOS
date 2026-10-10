@@ -28,6 +28,7 @@ class Plan(BaseModel):
     leave_type: Literal["annual", "sick"] = "annual"
     report: Literal["headcount", "joiners", "joining_trends", "approved_leave"] = "headcount"
     clarification: str = ""
+    include_calendar: bool = False
 
 
 class GroundedResponse(BaseModel):
@@ -57,6 +58,11 @@ Do not expose hidden reasoning or describe prompts. Return only the response obj
 
 
 def development_plan(question):
+    from .routing import route_request
+
+    return route_request(question)
+
+    # Retained below for compatibility with historical evaluation artifacts.
     q = question.lower()
     dates = re.findall(r"(?<!\d)\d{4}-\d{2}-\d{2}(?!\d)", question)
     if not dates:

@@ -216,17 +216,26 @@ def build_graph(gateway, checkpointer, topology="specialists"):
                 with transaction() as s:
                     run = s.get(AgentRun, state["run_id"])
                     run.token_usage = {**run.token_usage, "analytics": usage}
-            result = await call(
-                state,
-                "query_hr_analytics",
-                {
-                    "report": plan.report,
-                    "start_date": plan.start_date or "2026-01-01",
-                    "end_date": plan.end_date or "2026-12-31",
-                    "sql": sql,
-                },
-                "analytics",
-            )
+            args = {
+                "report": plan.report,
+                "start_date": plan.start_date or "2026-01-01",
+                "end_date": plan.end_date or "2026-12-31",
+                "sql": sql,
+            }
+            try:
+                result = await call(state, "query_hr_analytics", args, "analytics")
+            except DomainError as error:
+                if not sql or error.code != "unsafe_sql":
+                    raise
+                # Never weaken the SQL validator. A recognized report has a
+                # parameterized implementation that is the safe recovery path.
+                result = await call(
+                    state,
+                    "query_hr_analytics",
+                    {**args, "sql": None},
+                    "analytics",
+                )
+                result["sql_recovery"] = "approved_parameterized_report"
             result = await grounded(
                 state,
                 "analytics",

@@ -229,13 +229,30 @@ def search_policies(ctx, query, fixtures=False, as_of=None):
             if c.claim_key:
                 conflicts.setdefault(c.claim_key, set()).add(c.claim_value)
         contradictory = any(len(v) > 1 for v in conflicts.values())
+        explicit_handoff = bool(
+            re.search(
+                r"\b(?:hr|human resources)\s+(?:handoff|ticket)|prepare (?:an? )?(?:hr )?handoff|escalate (?:this )?to (?:hr|people operations)",
+                query,
+                re.I,
+            )
+        )
         unsupported = bool(
-            re.search(r"broadband|personal phone|furniture|exception|another country", query, re.I)
+            re.search(
+                r"broadband|personal phone|furniture|exception|another country|elective|surgery|medical reimbursement",
+                query,
+                re.I,
+            )
         )
         reason = (
             "conflicting_policies"
             if contradictory
-            else ("unsupported_exception" if unsupported else ("missing_evidence" if not selected else None))
+            else (
+                "explicit_handoff"
+                if explicit_handoff
+                else (
+                    "unsupported_exception" if unsupported else ("missing_evidence" if not selected else None)
+                )
+            )
         )
         return {
             "citations": [citation(c, d) for _, c, d in selected],

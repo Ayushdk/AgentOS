@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-10",
+  "source": "AgentOS user review",
+  "model": "gemini-3.5-flash-lite",
+  "scope": "Targeted acceptance checks; separate from the frozen deterministic 60-case evaluation",
+  "checks": [
+    {
+      "id": "combined-leave-calendar",
+      "result": "passed-live-api",
+      "evidence": "2026-12-14 through 2026-12-16 produced a leave draft, calendar check, and employee confirmation interrupt"
+    },
+    {
+      "id": "latest-turn-routing",
+      "result": "passed-regression-test",
+      "evidence": "A calendar request followed by an explicit leave request uses the newest dates and leave action"
+    },
+    {
+      "id": "ordinary-joiners-wording",
+      "result": "passed-live-api",
+      "evidence": "Employees joined each department in July 2026 resolved to joiners, 2026-07-01 through 2026-07-31"
+    },
+    {
+      "id": "analytics-sql-recovery",
+      "result": "passed-live-api",
+      "evidence": "Rejected generated SQL recovered through the approved parameterized report without weakening validation"
+    },
+    {
+      "id": "day-first-dates",
+      "result": "passed-regression-test",
+      "evidence": "14 December 2026 through 16 December 2026 resolves to ISO dates"
+    },
+    {
+      "id": "explicit-handoff",
+      "result": "passed-live-api",
+      "evidence": "Elective laser-eye surgery reimbursement offered a confirmation-backed HR ticket"
+    },
+    {
+      "id": "response-labels-and-queue-error",
+      "result": "passed-build-and-browser-suite",
+      "evidence": "Per-response execution labels and manager loading/error/retry states compile; 3 Playwright journeys pass"
+    }
+  ],
+  "validation": {
+    "backend_tests": "76 passed",
+    "playwright": "3 passed",
+    "production_build": "passed",
+    "ruff": "passed"
+  },
+  "limitations": "Targeted prompts were checked once in live mode. This is not a repeated statistical live-model benchmark or hosted deployment verification."
+}

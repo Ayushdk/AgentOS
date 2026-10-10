@@ -12,6 +12,7 @@ from agentos.errors import DomainError
 from agentos.model import development_plan
 from agentos.models import AuthIdentity, Leave, now, uid
 from agentos.public_demo import select_demo_persona
+from agentos.retrieval import search_policies
 from agentos.seed import seed_tenant
 from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi.testclient import TestClient
@@ -65,6 +66,50 @@ def test_leave_dates_accept_employee_formats_and_latest_followup_dates():
         "leave",
         "2026-10-16",
         "2026-10-21",
+    )
+
+
+def test_review_language_regressions_route_to_supported_workflows(actor):
+    combined = development_plan(
+        "Please prepare annual leave for 2026-12-14 to 2026-12-16 and check my calendar for conflicts."
+    )
+    assert combined.intent == "leave"
+    assert combined.include_calendar is True
+    assert (combined.start_date, combined.end_date) == ("2026-12-14", "2026-12-16")
+
+    latest = development_plan(
+        "Previous employee request: check my calendar for 2026-11-16 to 2026-11-20\n"
+        "Employee follow-up: Please prepare annual leave from 2026-12-14 to 2026-12-16"
+    )
+    assert latest.intent == "leave"
+    assert (latest.start_date, latest.end_date) == ("2026-12-14", "2026-12-16")
+
+    natural = development_plan("Please book annual leave from 14 December 2026 to 16 December 2026.")
+    assert (natural.intent, natural.start_date, natural.end_date) == (
+        "leave",
+        "2026-12-14",
+        "2026-12-16",
+    )
+
+    analytics = development_plan("How many employees joined each department in July 2026? Show a chart.")
+    assert (analytics.intent, analytics.report, analytics.start_date, analytics.end_date) == (
+        "analytics",
+        "joiners",
+        "2026-07-01",
+        "2026-07-31",
+    )
+
+    handoff = search_policies(
+        actor,
+        "Can I claim reimbursement for elective laser eye surgery? If the policy doesn't cover it, prepare an HR handoff for my confirmation.",
+        fixtures=True,
+    )
+    assert handoff["handoff_reason"] == "explicit_handoff"
+    assert (
+        development_plan(
+            "Can I claim reimbursement for elective laser eye surgery? If the policy doesn't cover it, prepare an HR handoff for my confirmation."
+        ).intent
+        == "policy"
     )
 
 
