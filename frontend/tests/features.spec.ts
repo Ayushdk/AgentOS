@@ -78,10 +78,11 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
     // Switch to Manager
     await page.getByLabel('Demo identity').selectOption('manager');
     await expect(page.locator('.profile')).toContainText('Tara Sen');
+    await expect(page.getByText('Manager workspace', { exact: true })).toBeVisible();
 
     // Navigate to Team Members
     await page.getByRole('button', { name: 'Team Members', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Engineering Team Roster' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: 'Direct Reports' })).toBeVisible({ timeout: 15000 });
 
     // Wait for direct reports table to load from backend
     await expect(page.locator('.team-directory-container .data-table')).toBeVisible({ timeout: 15000 });

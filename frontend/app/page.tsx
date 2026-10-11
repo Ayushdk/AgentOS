@@ -39,7 +39,10 @@ import { PolicyExplorer } from "@/components/policies/policy-explorer";
 import { TeamDirectory } from "@/components/team/team-directory";
 import {
   api,
+  ApiError,
+  setAuthFailureHandler,
   setBearer,
+  setTokenProvider,
   type Identity,
   type Run,
   type Leave,
@@ -229,13 +232,33 @@ export default function Page() {
   };
   useEffect(() => {
     let mounted = true;
+    let unsubscribeAuth = () => {};
+    setAuthFailureHandler(() => {
+      setPerson(null);
+      setError("Your session has expired. Sign in again to continue.");
+    });
     (async () => {
       try {
         const h = await api("/health");
         if (!mounted) return;
         setHealth(h);
         if (h.auth_mode === "supabase") {
-          const { data } = await supabase().auth.getSession();
+          const client = supabase();
+          setTokenProvider(async (refresh) => {
+            const { data, error } = refresh
+              ? await client.auth.refreshSession()
+              : await client.auth.getSession();
+            if (error) return null;
+            const token = data.session?.access_token ?? null;
+            setBearer(token);
+            return token;
+          });
+          const { data: listener } = client.auth.onAuthStateChange((event, session) => {
+            setBearer(session?.access_token ?? null);
+            if (event === "SIGNED_OUT") setPerson(null);
+          });
+          unsubscribeAuth = () => listener.subscription.unsubscribe();
+          const { data } = await client.auth.getSession();
           setBearer(data.session?.access_token ?? null);
         }
         try {
@@ -253,7 +276,7 @@ export default function Page() {
               end_date: to,
             }).then(setReport).catch(() => {});
           }
-        } catch {
+        } catch (authError) {
           if (h.auth_mode === "development") {
             const p = await api<Identity>("/auth/demo", {
               persona: "employee",
@@ -262,6 +285,11 @@ export default function Page() {
               setPerson(p);
               await loadData();
             }
+          } else if (mounted) {
+            const message = authError instanceof ApiError && authError.kind === "auth"
+              ? "Your session has expired. Sign in again to continue."
+              : (authError as Error).message;
+            setError(message);
           }
         }
       } catch (e) {
@@ -279,6 +307,9 @@ export default function Page() {
       .catch(() => {});
     return () => {
       mounted = false;
+      unsubscribeAuth();
+      setTokenProvider(null);
+      setAuthFailureHandler(null);
     };
   }, []);
   useEffect(() => {
@@ -1026,6 +1057,8 @@ export default function Page() {
                   <ManagerDashboard
                     person={person}
                     queue={queue}
+                    queueState={queueState}
+                    onRetryQueue={loadManagerQueue}
                     onReview={review}
                     onNavigate={navigate}
                     onSendPrompt={send}

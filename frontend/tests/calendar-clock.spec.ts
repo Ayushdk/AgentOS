@@ -144,11 +144,11 @@ test.describe('Calendar Controlled Clock & Timezone Suite', () => {
     await expect(page.locator('.profile')).toContainText('Tara Sen');
 
     // Verify upcoming availability card reflects working dates starting next Mon (Nov 16)
-    await expect(page.getByRole('heading', { name: 'Team Availability (Upcoming)' })).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.timeline-day-row').filter({ hasText: 'Nov 16' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: 'Five-day team coverage' })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.timeline-day-row').filter({ hasText: '16 Nov' })).toBeVisible({ timeout: 15000 });
 
     // Verify Nov 18 is recognized dynamically as corporate holiday
-    const nov18Row = page.locator('.timeline-day-row').filter({ hasText: 'Nov 18' });
+    const nov18Row = page.locator('.timeline-day-row').filter({ hasText: '18 Nov' });
     await expect(nov18Row).toBeVisible();
     await expect(nov18Row).toContainText('Meridian Foundation Day');
   });

@@ -23,6 +23,61 @@ def actor():
     return auth.resolve_identity(seed_tenant(), "E001")
 
 
+def test_cors_headers_cover_preflight_success_auth_and_server_errors(monkeypatch):
+    from agentos import api as api_module
+
+    origin = sorted(api_module.allowed_origins)[0]
+    tenant = seed_tenant()
+    manager = auth.resolve_identity(tenant, "E010")
+    employee = auth.resolve_identity(tenant, "E001")
+    cors = {"Origin": origin}
+
+    with TestClient(api_module.app, raise_server_exceptions=False) as client:
+        preflight = client.options(
+            "/manager/team",
+            headers={
+                **cors,
+                "Access-Control-Request-Method": "GET",
+                "Access-Control-Request-Headers": "authorization,x-agentos-request",
+            },
+        )
+        assert preflight.status_code == 200
+        assert preflight.headers["access-control-allow-origin"] == origin
+
+        ok = client.get(
+            "/manager/team",
+            headers=cors,
+            cookies={"agentos_session": auth.sign(manager)},
+        )
+        assert ok.status_code == 200
+        assert ok.headers["access-control-allow-origin"] == origin
+
+        unauthorized = client.get("/manager/team", headers=cors)
+        assert unauthorized.status_code == 401
+        assert unauthorized.headers["access-control-allow-origin"] == origin
+
+        forbidden = client.get(
+            "/manager/team",
+            headers=cors,
+            cookies={"agentos_session": auth.sign(employee)},
+        )
+        assert forbidden.status_code == 403
+        assert forbidden.headers["access-control-allow-origin"] == origin
+
+        monkeypatch.setattr(api_module, "engine", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+        failed = client.get("/health", headers=cors)
+        assert failed.status_code == 503
+        assert failed.headers["access-control-allow-origin"] == origin
+
+        rejected = client.post(
+            "/auth/demo",
+            headers={**cors, "Content-Type": "application/json"},
+            json={"persona": "employee"},
+        )
+        assert rejected.status_code == 403
+        assert rejected.headers["access-control-allow-origin"] == origin
+
+
 def test_signed_session_expiration_and_purpose(actor):
     for token in [auth.sign(actor, minutes=-1), auth.sign(actor, "mcp"), auth.sign(actor)[:-5] + "badxx"]:
         with pytest.raises(DomainError):

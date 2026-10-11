@@ -56,6 +56,7 @@ export function TeamDirectory({ person, onSendPrompt }: TeamDirectoryProps) {
 
   const activeCount = members.filter((m) => m.status === "Active").length;
   const exitedCount = members.filter((m) => m.status === "Exited").length;
+  const departments = [...new Set(members.map((m) => m.department).filter(Boolean))];
 
   return (
     <div className="team-directory-container">
@@ -66,7 +67,7 @@ export function TeamDirectory({ person, onSendPrompt }: TeamDirectoryProps) {
             <Users size={16} />
             <span>Direct Reports Directory</span>
           </div>
-          <h1 className="team-heading">Engineering Team Roster</h1>
+          <h1 className="team-heading">Direct Reports</h1>
           <p className="team-subtext">
             Official reporting line for Manager {person.name}. Live authorized employee records.
           </p>
@@ -109,7 +110,7 @@ export function TeamDirectory({ person, onSendPrompt }: TeamDirectoryProps) {
             <span className="stat-subtext">employee records</span>
           </div>
           <div className="stat-tag-row">
-            <span className="badge badge-blue-subtle">Engineering division</span>
+            <span className="badge badge-blue-subtle">{departments.length ? departments.join(", ") : "No departments loaded"}</span>
           </div>
         </div>
 
@@ -122,7 +123,7 @@ export function TeamDirectory({ person, onSendPrompt }: TeamDirectoryProps) {
           </div>
           <div className="stat-value-group">
             <span className="stat-number">{activeCount}</span>
-            <span className="stat-subtext">active engineers</span>
+            <span className="stat-subtext">active employees</span>
           </div>
           <div className="stat-tag-row">
             <span className="badge badge-success">On active duty</span>

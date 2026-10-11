@@ -55,15 +55,6 @@ app = FastAPI(title="AgentOS", version="1.0.0", lifespan=lifespan)
 allowed_origins = {settings().frontend_origin}
 if settings().environment == "local":
     allowed_origins.update({"http://localhost:3000", "http://127.0.0.1:3000"})
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=sorted(allowed_origins),
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type", "Authorization", "X-AgentOS-Request"],
-)
-
-
 @app.exception_handler(DomainError)
 async def domain_error(request, error):
     return JSONResponse({"error": {"code": error.code, "message": error.message}}, status_code=error.status)
@@ -98,10 +89,34 @@ async def protect_origin(request, call_next):
             return JSONResponse(
                 {"error": {"code": "request_size", "message": "Request is too large."}}, status_code=413
             )
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Keep infrastructure and unexpected application failures inside the
+        # CORS boundary so browsers can expose the structured retry response.
+        response = JSONResponse(
+            {
+                "error": {
+                    "code": "service_unavailable",
+                    "message": "The service is unavailable. Retry safely; completed writes remain protected against duplicates.",
+                }
+            },
+            status_code=503,
+        )
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
+
+# Register CORS last so it is the outermost application middleware. This makes
+# its headers apply to early CSRF/origin rejections and exception responses too.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=sorted(allowed_origins),
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization", "X-AgentOS-Request"],
+)
 
 
 def identity(request: Request):
