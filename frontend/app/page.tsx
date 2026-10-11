@@ -27,6 +27,7 @@ import {
   AlertCircle,
   FileText,
   Home,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -40,6 +41,7 @@ import { TeamDirectory } from "@/components/team/team-directory";
 import {
   api,
   ApiError,
+  ensureBackendReady,
   setAuthFailureHandler,
   setBearer,
   setTokenProvider,
@@ -186,6 +188,8 @@ export default function Page() {
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [connectionFailed, setConnectionFailed] = useState(false);
+  const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [balances, setBalances] = useState<any[]>([]);
@@ -208,17 +212,22 @@ export default function Page() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const chatEnd = useRef<HTMLDivElement>(null);
+  const dataLoad = useRef<Promise<void> | null>(null);
   const current = runs.find((r) => r.id === active);
   const annual = balances.find((b) => b.leave_type === "annual");
-  const loadData = async () => {
-    const [h, b, l] = await Promise.all([
-      api<Run[]>("/runs"),
-      api("/balances"),
-      api<Leave[]>("/leave"),
-    ]);
-    setRuns(h);
-    setBalances(b.balances);
-    setLeaves(l);
+  const loadData = () => {
+    if (dataLoad.current) return dataLoad.current;
+    dataLoad.current = (async () => {
+      const [h, b, l] = await Promise.all([
+        api<Run[]>("/runs"),
+        api("/balances"),
+        api<Leave[]>("/leave"),
+      ]);
+      setRuns(h);
+      setBalances(b.balances);
+      setLeaves(l);
+    })().finally(() => { dataLoad.current = null; });
+    return dataLoad.current;
   };
   const loadManagerQueue = async () => {
     setQueueState("loading");
@@ -239,7 +248,8 @@ export default function Page() {
     });
     (async () => {
       try {
-        const h = await api("/health");
+        setConnectionFailed(false);
+        const h = await ensureBackendReady(bootstrapAttempt > 0);
         if (!mounted) return;
         setHealth(h);
         if (h.auth_mode === "supabase") {
@@ -265,9 +275,6 @@ export default function Page() {
           const p = await api<Identity>("/auth/me");
           setPerson(p);
           await loadData();
-          if (p.role === "manager") {
-            loadManagerQueue().catch(() => {});
-          }
           if (p.role === "hr") {
             api("/tickets").then(setTickets).catch(() => {});
             api("/analytics", {
@@ -293,10 +300,12 @@ export default function Page() {
           }
         }
       } catch (e) {
-        if (mounted)
+        if (mounted) {
+          setConnectionFailed(true);
           setError(
-            "The backend is waking up or unavailable. Retry shortly, or open the recorded demo.",
+            "AgentOS could not connect within the recovery window. Retry when you are ready.",
           );
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -311,7 +320,7 @@ export default function Page() {
       setTokenProvider(null);
       setAuthFailureHandler(null);
     };
-  }, []);
+  }, [bootstrapAttempt]);
   useEffect(() => {
     if (!person) return;
     setError("");
@@ -363,9 +372,6 @@ export default function Page() {
       setActive(null);
       setEvents([]);
       await loadData();
-      if (p.role === "manager") {
-        await loadManagerQueue().catch(() => {});
-      }
       if (p.role === "hr") {
         api("/tickets").then(setTickets).catch(() => {});
         api("/analytics", {
@@ -471,9 +477,6 @@ export default function Page() {
       setPerson(me);
       setPassword("");
       await loadData();
-      if (me.role === "manager") {
-        await loadManagerQueue().catch(() => {});
-      }
       if (me.role === "hr") {
         api("/tickets").then(setTickets).catch(() => {});
         api("/analytics", {
@@ -1011,10 +1014,25 @@ export default function Page() {
             </div>
           )}
           {loading ? (
-            <div className="empty">
-              <LoaderCircle className="spin" />
-              <h3>Opening your workspace</h3>
-              <p>A free backend may need a moment to wake up.</p>
+            <div className="connection-state" role="status" aria-live="polite">
+              <div className="connection-orbit"><LoaderCircle className="spin" /></div>
+              <span className="team-badge">Secure workspace connection</span>
+              <h2>Connecting to AgentOS</h2>
+              <p>The free backend may be waking up. Your session and work remain safe while we reconnect.</p>
+              <div className="connection-progress"><span /></div>
+            </div>
+          ) : connectionFailed ? (
+            <div className="connection-state connection-failed" role="alert">
+              <div className="connection-orbit"><AlertCircle /></div>
+              <span className="team-badge">Connection paused</span>
+              <h2>AgentOS is still unavailable</h2>
+              <p>No dashboard data was replaced or cleared. Retry the same safe readiness check.</p>
+              <div className="flex gap-2">
+                <Button onClick={() => { setError(""); setLoading(true); setBootstrapAttempt((value) => value + 1); }}>
+                  <RefreshCw size={15} /> Retry connection
+                </Button>
+                <Button variant="ghost" onClick={() => navigate("replay")}>Open recorded demo</Button>
+              </div>
             </div>
           ) : !person && view !== "replay" ? (
             <div className="login card">
