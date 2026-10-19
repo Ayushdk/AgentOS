@@ -92,19 +92,24 @@ test.describe("backend readiness and retry safety", () => {
     expect(queueRequests).toBe(1);
   });
 
-  test("401 authentication failure is not treated as backend unavailability", async ({ page }) => {
+  test("a fresh hosted visitor sees sign in without an expired-session error", async ({ page }) => {
+    let identityRequests = 0;
     await page.route("**/health", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ status: "ok", auth_mode: "supabase", model_mode: "development", public_demo: false }),
     }));
-    await page.route("**/auth/me", (route) => route.fulfill({
-      status: 401,
-      contentType: "application/json",
-      body: JSON.stringify({ error: { code: "unauthorized", message: "Please sign in." } }),
-    }));
+    await page.route("**/auth/me", (route) => {
+      identityRequests += 1;
+      return route.fulfill({ status: 401, contentType: "application/json", body: "{}" });
+    });
     await page.goto("/");
-    await expect(page.getByText("Your session has expired. Sign in again to continue.")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Your session has expired. Sign in again to continue.")).not.toBeVisible();
+    await expect(page.getByText("AI OPERATIONAL ASSISTANT")).not.toBeVisible();
+    await expect(page.getByLabel("Email address")).toHaveValue("");
+    await expect(page.getByLabel("Password")).toHaveValue("");
+    expect(identityRequests).toBe(0);
     await expect(page.getByRole("heading", { name: "Connecting to AgentOS" })).not.toBeVisible();
   });
 

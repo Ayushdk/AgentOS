@@ -193,6 +193,7 @@ export default function Page() {
         const h = await ensureBackendReady(bootstrapAttempt > 0);
         if (!mounted) return;
         setHealth(h);
+        let hasSupabaseSession = false;
 
         if (h.auth_mode === "supabase") {
           const client = supabase();
@@ -211,7 +212,15 @@ export default function Page() {
           });
           unsubscribeAuth = () => listener.subscription.unsubscribe();
           const { data } = await client.auth.getSession();
-          setBearer(data.session?.access_token ?? null);
+          const token = data.session?.access_token ?? null;
+          hasSupabaseSession = Boolean(token);
+          setBearer(token);
+        }
+
+        if (h.auth_mode === "supabase" && !hasSupabaseSession) {
+          setPerson(null);
+          setError("");
+          return;
         }
 
         try {
@@ -327,6 +336,47 @@ export default function Page() {
       setNotice("Switched to " + p.name + ". Your visitor workspace stays isolated.");
     } catch (e) {
       setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function signIn(email: string, password: string) {
+    setBusy(true);
+    setError("");
+    try {
+      if (health?.auth_mode !== "supabase") {
+        const persona = email.includes("manager") ? "manager" : email.includes("hr") ? "hr" : "employee";
+        await switchPersona(persona);
+        return;
+      }
+
+      const client = supabase();
+      const { data, error: signInError } = await client.auth.signInWithPassword({ email, password });
+      if (signInError || !data.session?.access_token) {
+        throw new Error(signInError?.message || "Sign in could not be completed.");
+      }
+
+      setBearer(data.session.access_token);
+      const identity = await api<Identity>("/auth/me");
+      setPerson(identity);
+      setActive(null);
+      setView("overview");
+      await loadData();
+      if (identity.role === "manager") await loadManagerQueue();
+      if (identity.role === "hr") {
+        const [nextTickets, nextSummary, nextReport] = await Promise.all([
+          api("/tickets"),
+          api<HRSummary>("/hr/summary"),
+          api("/analytics", { report: "headcount", start_date: "2026-01-01", end_date: "2026-12-31" }),
+        ]);
+        setTickets(nextTickets);
+        setHrSummary(nextSummary);
+        setReport(nextReport);
+      }
+    } catch (signInError) {
+      setPerson(null);
+      setError((signInError as Error).message);
     } finally {
       setBusy(false);
     }
@@ -462,17 +512,10 @@ export default function Page() {
   if (!person) {
     return (
       <LoginView
-        onLogin={async (email, pass) => {
-          setBusy(true);
-          try {
-            const persona = email.includes("manager") ? "manager" : email.includes("hr") ? "hr" : "employee";
-            await switchPersona(persona);
-          } finally {
-            setBusy(false);
-          }
-        }}
+        onLogin={signIn}
         onSelectDemoPersona={switchPersona}
         onOpenReplay={() => setView("replay")}
+        demoEnabled={Boolean(health?.public_demo)}
         busy={busy}
         error={error}
       />
