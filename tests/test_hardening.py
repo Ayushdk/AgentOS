@@ -230,6 +230,47 @@ def test_public_demo_scoped_to_verified_anonymous_subject(monkeypatch):
         select_demo_persona("verified-test-token", "hr")
 
 
+def test_provisioned_demo_account_can_switch_persona_without_anonymous_auth(actor, monkeypatch):
+    cfg = settings()
+    monkeypatch.setattr(cfg, "auth_mode", "supabase")
+    monkeypatch.setattr(cfg, "enable_public_demo", False)
+    subject = uid()
+    with transaction() as s:
+        s.add(
+            AuthIdentity(
+                subject=subject,
+                tenant_id=actor.tenant_id,
+                employee_id=actor.employee_id,
+            )
+        )
+    monkeypatch.setattr(
+        "agentos.public_demo.supabase_claims",
+        lambda _: {"sub": subject, "is_anonymous": False},
+    )
+
+    manager = select_demo_persona("verified-test-token", "manager")
+    assert manager.tenant_id == actor.tenant_id
+    assert manager.employee_id == "E010"
+    assert manager.role == "manager"
+    assert manager.demo is True
+
+
+def test_provisioned_non_demo_account_cannot_switch_persona(monkeypatch):
+    cfg = settings()
+    monkeypatch.setattr(cfg, "auth_mode", "supabase")
+    subject = uid()
+    tenant_id = seed_tenant(kind="production")
+    with transaction() as s:
+        s.add(AuthIdentity(subject=subject, tenant_id=tenant_id, employee_id="E001"))
+    monkeypatch.setattr(
+        "agentos.public_demo.supabase_claims",
+        lambda _: {"sub": subject, "is_anonymous": False},
+    )
+
+    with pytest.raises(DomainError, match="synthetic demo workspace"):
+        select_demo_persona("verified-test-token", "manager")
+
+
 def test_two_anonymous_visitors_get_different_workspaces(monkeypatch):
     cfg = settings()
     monkeypatch.setattr(cfg, "auth_mode", "supabase")

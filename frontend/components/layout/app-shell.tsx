@@ -219,7 +219,7 @@ export function AppShell({
             </div>
           </div>
 
-          <label className="persona-label">
+          {person?.demo && <label className="persona-label">
             Demo identity
             <select
               aria-label="Demo identity"
@@ -230,7 +230,7 @@ export function AppShell({
               <option value="manager">Manager · Tara Sen (Rahul)</option>
               <option value="hr">HR Analyst · Tara Shah (Priya)</option>
             </select>
-          </label>
+          </label>}
         </div>
       </aside>
 
