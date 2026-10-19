@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Sparkles,
   Send,
@@ -39,6 +39,19 @@ export function AskAgentosView({
   const [inputVal, setInputVal] = useState("");
 
   const currentRun = runs.find((r) => r.id === activeRunId) || runs[0];
+  const previousRuns = useMemo(
+    () =>
+      runs
+        .filter((run) => run.id !== currentRun?.id)
+        .slice()
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+    [runs, currentRun?.id],
+  );
+  const conversationEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    conversationEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [currentRun?.id, currentRun?.status, busy]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,7 +127,7 @@ export function AskAgentosView({
           padding: 24,
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, overflowY: "auto", flex: 1 }}>
+        <div className="conversation-thread">
           {/* Greeting if no active conversation */}
           {!currentRun && (
             <div
@@ -146,6 +159,29 @@ export function AskAgentosView({
               <p style={{ fontSize: 13, lineHeight: 1.6 }}>
                 Ask about company leave entitlements, remote work rules, or plan a custom vacation. Answers cite official policies.
               </p>
+            </div>
+          )}
+
+          {previousRuns.length > 0 && (
+            <div className="conversation-history" aria-label="Conversation history">
+              <div className="conversation-history-label">Earlier messages</div>
+              {previousRuns.map((run) => (
+                <React.Fragment key={run.id}>
+                  <div className="chat-bubble-user">{run.question}</div>
+                  <div className="chat-bubble-ai chat-bubble-history">
+                    <div className="chat-response-heading">
+                      <span className="assistant-mark"><Sparkles size={13} /></span>
+                      <strong>AgentOS Assistant</strong>
+                      <time dateTime={run.created_at}>
+                        {new Date(run.created_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+                      </time>
+                    </div>
+                    <div className="chat-response-text">
+                      {run.result?.answer || run.result?.message || run.result?.summary || "This response is still being prepared."}
+                    </div>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
           )}
 
@@ -337,6 +373,7 @@ export function AskAgentosView({
               <span>AgentOS is verifying policy rules and analyzing calendar...</span>
             </div>
           )}
+          <div ref={conversationEndRef} />
         </div>
 
         {/* Input Composer */}

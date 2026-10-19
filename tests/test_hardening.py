@@ -168,6 +168,17 @@ def test_review_language_regressions_route_to_supported_workflows(actor):
         == "policy"
     )
 
+    laptop_handoff = search_policies(
+        actor,
+        "Send a message to HR that my laptop is not working.",
+        fixtures=True,
+    )
+    assert laptop_handoff["handoff_reason"] == "explicit_handoff"
+    assert development_plan("Send a message to HR that my laptop is not working.").intent == "policy"
+
+    laptop_policy = search_policies(actor, "What is the onboarding laptop policy?", fixtures=True)
+    assert laptop_policy["handoff_reason"] is None
+
 
 def test_supabase_signature_and_server_side_role_mapping(actor, monkeypatch):
     private = ec.generate_private_key(ec.SECP256R1())

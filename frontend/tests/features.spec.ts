@@ -82,6 +82,24 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
     await expect(page.locator('.conversation')).toBeVisible({ timeout: 60000 });
   });
 
+  test('2b. Employee assistant keeps earlier messages visible and offers an HR handoff', async ({ page }) => {
+    await page.getByRole('button', { name: 'Employee assistant' }).click();
+    const composer = page.getByLabel('Ask your employee assistant');
+
+    await composer.fill('What is the policy for work from home?');
+    await page.getByRole('button', { name: 'Send question' }).click();
+    await expect(page.locator('.conversation').getByText('What is the policy for work from home?', { exact: true })).toBeVisible({ timeout: 60_000 });
+
+    await composer.fill('Send a message to HR that my laptop is not working.');
+    await page.getByRole('button', { name: 'Send question' }).click();
+
+    await expect(page.locator('.conversation').getByText('What is the policy for work from home?', { exact: true })).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('.conversation').getByText('Send a message to HR that my laptop is not working.', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Confirm handoff' })).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm handoff' }).click();
+    await expect(page.getByText('HR ticket created')).toBeVisible({ timeout: 60_000 });
+  });
+
   test('3. Manager Team Members Directory and Team Calendar', async ({ page }) => {
     // Switch to Manager
     await page.getByLabel('Demo identity').selectOption('manager');

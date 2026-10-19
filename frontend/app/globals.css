@@ -841,6 +841,76 @@ code, pre {
   margin: 0 auto;
 }
 
+.conversation-thread {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  max-height: 680px;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scroll-behavior: smooth;
+}
+
+.conversation-history {
+  display: contents;
+}
+
+.conversation-history-label {
+  align-self: center;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.chat-bubble-history {
+  opacity: .92;
+}
+
+.chat-response-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--text-main);
+  font-size: 13px;
+}
+
+.chat-response-heading time {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.assistant-mark {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+}
+
+.chat-response-text,
+.chat-bubble-user,
+.chat-bubble-ai {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.chat-response-text {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
 .chat-bubble-user {
   align-self: flex-end;
   background: var(--primary);

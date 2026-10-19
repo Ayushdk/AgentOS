@@ -231,7 +231,11 @@ def search_policies(ctx, query, fixtures=False, as_of=None):
         contradictory = any(len(v) > 1 for v in conflicts.values())
         explicit_handoff = bool(
             re.search(
-                r"\b(?:hr|human resources)\s+(?:handoff|ticket)|prepare (?:an? )?(?:hr )?handoff|escalate (?:this )?to (?:hr|people operations)",
+                r"\b(?:hr|human resources)\s+(?:handoff|ticket)"
+                r"|prepare (?:an? )?(?:hr )?handoff"
+                r"|escalate (?:this )?to (?:hr|people operations)"
+                r"|(?:send|forward|share|report|message|contact|tell|notify|raise)\b.{0,80}\b(?:to|with)?\s*(?:hr|human resources|people operations)\b"
+                r"|(?:create|open|raise|submit)\b.{0,40}\b(?:hr|human resources|people operations)\s+(?:ticket|request|case)",
                 query,
                 re.I,
             )
