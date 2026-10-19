@@ -1902,10 +1902,7 @@ html, body {
 .employee-dot { background: #60a5fa; }
 .manager-dot { background: #a78bfa; }
 .hr-dot { background: #34d399; }
-.login-tour { padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.12); }
-.login-tour p { color: #9fb3d1; font-size: 11px; }
-.login-tour button { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 0; border: 0; background: none; color: #fff; font-size: 12px; font-weight: 650; }
-.login-tour button:hover { color: #bfdbfe; }
+.login-environment { padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.12); color: #9fb3d1; font-size: 11px; }
 
 .login-card { display: flex; flex-direction: column; justify-content: center; padding: 54px 56px; background: #fff; }
 .login-heading { margin-bottom: 30px; text-align: center; }
@@ -1927,7 +1924,11 @@ html, body {
 .login-demo-account strong,
 .login-demo-account small { display: block; }
 .login-demo-account small { margin-top: 2px; color: var(--text-secondary); font-size: 10px; font-weight: 400; }
-.login-access-note { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 11px; line-height: 1.6; text-align: center; }
+.login-credentials-tip { display: flex; align-items: flex-start; gap: 11px; margin-top: 24px; padding: 14px 16px; border: 1px solid #bfdbfe; border-radius: 9px; background: #eff6ff; color: #1e3a5f; }
+.login-credentials-tip > svg { flex: 0 0 auto; margin-top: 2px; color: var(--primary); }
+.login-credentials-tip strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.login-credentials-tip p { color: #48627f; font-size: 11px; line-height: 1.55; }
+.login-credentials-tip code { color: #173968; font-size: 11px; font-weight: 650; }
 
 @media (max-width: 760px) {
   .login-page { padding: 0; place-items: stretch; }
@@ -1937,6 +1938,6 @@ html, body {
   .login-context h2 { font-size: 23px; }
   .login-context-copy,
   .login-role-list { display: none; }
-  .login-tour { margin-top: 24px; }
+  .login-environment { margin-top: 24px; }
   .login-card { justify-content: flex-start; padding: 38px 24px 46px; }
 }

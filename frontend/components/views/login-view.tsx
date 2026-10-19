@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowRight, Lock, Mail, Play, Shield } from "lucide-react";
+import { ArrowRight, Info, Lock, Mail, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LoginViewProps {
   onLogin: (email: string, pass: string) => Promise<void>;
   onSelectDemoPersona: (persona: "employee" | "manager" | "hr") => Promise<void>;
-  onOpenReplay: () => void;
   demoEnabled: boolean;
   busy: boolean;
   error?: string;
@@ -22,7 +21,6 @@ const demoAccounts = [
 export function LoginView({
   onLogin,
   onSelectDemoPersona,
-  onOpenReplay,
   demoEnabled,
   busy,
   error,
@@ -61,12 +59,7 @@ export function LoginView({
             </ul>
           </div>
 
-          <div className="login-tour">
-            <p>Want to explore without signing in?</p>
-            <button type="button" onClick={onOpenReplay}>
-              <Play size={14} /> View guided product tour
-            </button>
-          </div>
+          <p className="login-environment">Synthetic workspace · Portfolio demonstration</p>
         </aside>
 
         <section className="login-card">
@@ -104,6 +97,15 @@ export function LoginView({
             </Button>
           </form>
 
+          <div className="login-credentials-tip" aria-label="Demo login credentials">
+            <Info size={17} />
+            <div>
+              <strong>Demo access</strong>
+              <p>Email: <code>demo@gmail.com</code></p>
+              <p>Password: <code>demo123</code></p>
+            </div>
+          </div>
+
           {demoEnabled ? (
             <div className="login-demo-section">
               <div className="login-divider"><span>Demo workspaces</span></div>
@@ -116,11 +118,7 @@ export function LoginView({
                 ))}
               </div>
             </div>
-          ) : (
-            <p className="login-access-note">
-              Access is limited to provisioned demonstration accounts. The guided tour is available without signing in.
-            </p>
-          )}
+          ) : null}
         </section>
       </section>
     </main>

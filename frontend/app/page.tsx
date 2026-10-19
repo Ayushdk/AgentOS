@@ -514,7 +514,6 @@ export default function Page() {
       <LoginView
         onLogin={signIn}
         onSelectDemoPersona={switchPersona}
-        onOpenReplay={() => setView("replay")}
         demoEnabled={Boolean(health?.public_demo)}
         busy={busy}
         error={error}

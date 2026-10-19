@@ -109,6 +109,10 @@ test.describe("backend readiness and retry safety", () => {
     await expect(page.getByText("AI OPERATIONAL ASSISTANT")).not.toBeVisible();
     await expect(page.getByLabel("Email address")).toHaveValue("");
     await expect(page.getByLabel("Password")).toHaveValue("");
+    await expect(page.getByLabel("Demo login credentials")).toContainText("demo@gmail.com");
+    await expect(page.getByLabel("Demo login credentials")).toContainText("demo123");
+    await expect(page.getByText("Want to explore without signing in?")).not.toBeVisible();
+    await expect(page.getByText(/guided tour is available/i)).not.toBeVisible();
     expect(identityRequests).toBe(0);
     await expect(page.getByRole("heading", { name: "Connecting to AgentOS" })).not.toBeVisible();
   });
