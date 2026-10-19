@@ -385,11 +385,13 @@ ANGELONE_AGENT/
 │   │   ├── calendar/
 │   │   │   └── calendar-view.tsx         # Monthly interactive calendar, holiday badges, event inspector
 │   │   ├── dashboard/
-│   │   │   ├── employee-dashboard.tsx    # Employee workspace, balance cards, AI assistant, leave history
-│   │   │   ├── manager-dashboard.tsx     # Manager portal, approval queue, team metrics, direct reports
-│   │   │   └── hr-dashboard.tsx          # HR portal, workforce analytics, ticket queue, audit runner
-│   │   ├── policies/
-│   │   │   └── policy-explorer.tsx       # Document browser, section viewer, grounded policy Q&A
+│   │   ├── views/                        # Current role-specific screens
+│   │   │   ├── employee-home-view.tsx    # Employee overview and recent activity
+│   │   │   ├── manager-home-view.tsx     # Manager approval and team overview
+│   │   │   ├── hr-dashboard-view.tsx     # HR overview backed by derived summary data
+│   │   │   └── company-policies-view.tsx # Document browser and policy questions
+│   │   ├── layout/
+│   │   │   └── app-shell.tsx             # Shared role-aware navigation and page frame
 │   │   ├── team/
 │   │   │   └── team-directory.tsx        # Manager direct reports roster, search, status indicators
 │   │   └── ui/
@@ -486,7 +488,7 @@ AgentOS avoids generic "AI template" aesthetics—no flashing neon borders, no d
   - **Manager Overlap View:** For managers, displays direct reports' approved and pending absences directly on the team schedule.
 - **Interactive Day Inspector:** Clicking any date populates a right-hand inspection drawer detailing all scheduled items, holiday notes, and working-day calculations for that specific date.
 
-### 4. Policy Explorer & Document Reader (`frontend/components/policies/policy-explorer.tsx`)
+### 4. Policy Explorer & Document Reader (`frontend/components/views/company-policies-view.tsx`)
 - **Two-Pane Repository Browser:**
   - **Sidebar:** Live search filter matching policy titles, audience tags, and effective dates across the seeded corporate corpus (`annual-leave.md`, `sick-leave.md`, `remote-work.md`, `parental-leave.md`, `code-of-conduct.md`).
   - **Main Reading Pane:** Structured document reader rendering policy version, audience, effective date, and formatted section chunks.
@@ -1138,7 +1140,7 @@ Automated screenshot artifacts generated during end-to-end test execution:
 
 27. **Q: How does the frontend handle real-time optimistic UI updates during manager approvals?**
     *30-second summary:* When a manager clicks "Approve", the UI immediately removes the item from the queue and updates pending counts before the API call resolves.
-    *Deep explanation:* `frontend/components/dashboard/manager-dashboard.tsx` maintains local component state for pending approvals. Upon clicking approve, it optimistically filters out the approved ID and updates metric counts. If the API request subsequently fails, the state is rolled back and an error toast is displayed.
+    *Deep explanation:* `frontend/components/views/manager-home-view.tsx` renders the queue supplied by the page coordinator. The coordinator waits for the protected review request to succeed and then reloads `/manager/queue`; a failed review leaves the existing queue visible and displays the API error instead of presenting an unconfirmed decision.
 
 28. **Q: How does the Calendar component render monthly layouts without external date libraries?**
     *30-second summary:* It uses native JavaScript `Date` math to calculate days in the month, starting weekday offsets, and trailing padding days.
@@ -1146,7 +1148,7 @@ Automated screenshot artifacts generated during end-to-end test execution:
 
 29. **Q: How does the Policy Explorer synchronize document reading with AI Q&A?**
     *30-second summary:* Selecting a policy updates the active document state, displaying its sections in the reader and scoping AI prompt suggestions to that specific document.
-    *Deep explanation:* `frontend/components/policies/policy-explorer.tsx` fetches policy details via `GET /policies/{id}` when a user clicks a sidebar document. The active policy ID and section headings are passed to the embedded AI prompt interface, generating contextual prompt chips (e.g., "Ask about working locations in Hybrid Schedule").
+    *Deep explanation:* `frontend/components/views/company-policies-view.tsx` fetches policy details via `GET /policies/{id}` when a user selects a document. The active policy and section headings provide contextual question shortcuts that send a grounded prompt through the normal assistant workflow.
 
 30. **Q: How does the application enforce responsive design for mobile devices?**
     *30-second summary:* CSS media queries adjust multi-column grids into single-column layouts and replace the persistent sidebar with a collapsible mobile navigation drawer.

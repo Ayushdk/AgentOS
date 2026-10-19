@@ -7,6 +7,7 @@ AgentOS is an independent portfolio application for the fictional company **Meri
 - **Frontend:** [agent-os-sigma-vert.vercel.app](https://agent-os-sigma-vert.vercel.app)
 - **API health:** [agentos-api-2ima.onrender.com/health](https://agentos-api-2ima.onrender.com/health)
 - **Technical handbook:** [docs/FULL_PROJECT.md](docs/FULL_PROJECT.md)
+- **Project guide:** [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md)
 - **Current limitations:** [docs/LIMITATIONS.md](docs/LIMITATIONS.md)
 
 > The Render free service can take tens of seconds to wake. The frontend performs one shared readiness check, shows a connection state, and retries only safe GET requests within fixed budgets. The recorded replay remains available when live services are unavailable.

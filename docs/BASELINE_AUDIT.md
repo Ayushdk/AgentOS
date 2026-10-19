@@ -30,7 +30,7 @@ AgentOS is an existing working application, not a prototype to replace. Its stro
 | Reference | Current implementation | Backend source | Status |
 |---:|---|---|---|
 | 1 Login/demo selection | `app/page.tsx` sign-in portal | `/health`, `/auth/me`, `/auth/demo/persona` | Partial until isolated hosted anonymous auth is approved/configured |
-| 2 Employee dashboard | `employee-dashboard.tsx` | `/balances`, `/leave`, `/calendar` | Implemented |
+| 2 Employee dashboard | `views/employee-home-view.tsx` | `/balances`, `/leave`, `/calendar` | Implemented |
 | 3 Ask AgentOS | assistant view in `page.tsx` | `/chat`, `/runs`, `/citations` | Implemented |
 | 4 Submit leave | assistant draft/confirmation card | `/chat`, `/runs/{id}/resume` | Implemented |
 | 5 My leave | leave view in `page.tsx` | `/leave` | Implemented |
@@ -38,13 +38,13 @@ AgentOS is an existing working application, not a prototype to replace. Its stro
 | 7 Leave balance | overview and leave view | `/balances` | Implemented; no separate route |
 | 8 My tickets | none in baseline | none for employee reads | Missing |
 | 9 Ticket detail | none in baseline | none for employee reads | Missing |
-| 10 Company policies | `policy-explorer.tsx` | `/policies`, `/policies/{id}` | Implemented read-only |
-| 11 Manager dashboard | `manager-dashboard.tsx` | `/manager/queue`, `/manager/team`, `/calendar` | Implemented |
+| 10 Company policies | `views/company-policies-view.tsx` | `/policies`, `/policies/{id}` | Implemented read-only |
+| 11 Manager dashboard | `views/manager-home-view.tsx` | `/manager/queue`, `/manager/team`, `/calendar` | Implemented |
 | 12 Team requests | manager view in `page.tsx` | `/manager/queue` | Pending queue implemented; historical filter missing |
 | 13 Approval modal | inline review cards | `/manager/requests/{id}/review` | Supported behavior; no separate modal |
 | 14 Team directory | `team-directory.tsx` | `/manager/team` | Implemented |
 | 15 Team analytics | availability/coverage only | `/calendar`, `/manager/team` | Partial; unsupported attrition charts intentionally omitted |
-| 16 HR dashboard | `hr-dashboard.tsx` | `/analytics`, `/tickets` | Partial because some overview metrics are hardcoded |
+| 16 HR dashboard | `views/hr-dashboard-view.tsx` | `/hr/summary`, `/analytics`, `/tickets` | Implemented with derived overview metrics |
 | 17 Workforce analytics | analytics view in `page.tsx` | `/analytics` | Implemented |
 | 18 Department distribution | HR dashboard/chart | headcount report | Implemented |
 | 19 HR tickets | handoff view | `/tickets`, `/tickets/{id}/resolve` | Implemented |
