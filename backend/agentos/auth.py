@@ -31,7 +31,7 @@ def resolve_identity(tenant: str, employee: str) -> Identity:
             employee_id=employee,
             role=row.role,
             name=row.name,
-            demo=s.get(Tenant, tenant).kind in {"demo", "hosted_demo"},
+            demo=s.get(Tenant, tenant).kind in {"demo", "hosted_demo", "local"},
         )
 
 

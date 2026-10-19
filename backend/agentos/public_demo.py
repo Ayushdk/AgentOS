@@ -45,7 +45,7 @@ def select_demo_persona(token, persona):
                 )
         elif mapping:
             tenant = s.get(Tenant, mapping.tenant_id)
-            if not tenant or tenant.kind != "demo":
+            if not tenant or tenant.kind not in {"demo", "local"}:
                 raise DomainError(
                     "forbidden",
                     "Identity switching is available only in the synthetic demo workspace.",

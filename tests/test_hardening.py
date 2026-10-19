@@ -255,6 +255,23 @@ def test_provisioned_demo_account_can_switch_persona_without_anonymous_auth(acto
     assert manager.demo is True
 
 
+def test_legacy_local_synthetic_account_can_switch_persona(monkeypatch):
+    cfg = settings()
+    monkeypatch.setattr(cfg, "auth_mode", "supabase")
+    subject = uid()
+    tenant_id = seed_tenant(kind="local")
+    with transaction() as s:
+        s.add(AuthIdentity(subject=subject, tenant_id=tenant_id, employee_id="E001"))
+    monkeypatch.setattr(
+        "agentos.public_demo.supabase_claims",
+        lambda _: {"sub": subject, "is_anonymous": False},
+    )
+
+    hr = select_demo_persona("verified-test-token", "hr")
+    assert hr.role == "hr"
+    assert hr.demo is True
+
+
 def test_provisioned_non_demo_account_cannot_switch_persona(monkeypatch):
     cfg = settings()
     monkeypatch.setattr(cfg, "auth_mode", "supabase")
