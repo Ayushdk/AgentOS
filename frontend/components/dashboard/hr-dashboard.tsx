@@ -30,36 +30,24 @@ import {
   Cell,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import type { Identity, Report } from "@/lib/api";
+import type { HRSummary, Identity, Report } from "@/lib/api";
 
 interface HRDashboardProps {
   person: Identity;
   tickets: any[];
   report: Report | null;
+  summary: HRSummary | null;
   onResolveTicket: (id: string) => Promise<void>;
   onNavigate: (view: any) => void;
   onSendPrompt: (text: string) => void;
   busy: boolean;
 }
 
-const defaultDepartmentData = [
-  { department: "Engineering", count: 10 },
-  { department: "Product", count: 10 },
-  { department: "Operations", count: 10 },
-  { department: "Finance", count: 10 },
-  { department: "People", count: 10 },
-];
-
-const statusDonutData = [
-  { name: "Active", value: 47, color: "#10b981" },
-  { name: "On Leave", value: 2, color: "#3b82f6" },
-  { name: "Exited", value: 3, color: "#94a3b8" },
-];
-
 export function HRDashboard({
   person,
   tickets,
   report,
+  summary,
   onResolveTicket,
   onNavigate,
   onSendPrompt,
@@ -70,17 +58,20 @@ export function HRDashboard({
 
   const firstName = person.name.split(" ")[0] || "Tara";
 
-  // Use report rows if available, else default department data
   const chartRows =
     report && report.report === "headcount" && report.rows.length > 0
       ? report.rows.map((r: any) => ({
           department: r.department || r.group,
-          count: Number(r.value || 10),
+          count: Number(r.value),
         }))
-      : defaultDepartmentData;
+      : [];
 
-  const totalHeadcount = report?.total ?? chartRows.reduce((acc, curr) => acc + curr.count, 0);
-  const departmentCount = chartRows.length;
+  const totalHeadcount = summary?.employees.active;
+  const departmentCount = summary?.departments.count;
+  const statusDonutData = summary ? [
+    { name: "Active", value: summary.employees.active, color: "#10b981" },
+    { name: "Exited", value: summary.employees.exited, color: "#94a3b8" },
+  ] : [];
 
   const openTickets = tickets.filter((t) => t.status === "open");
 
@@ -140,16 +131,16 @@ export function HRDashboard({
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">{totalHeadcount}</span>
+            <span className="stat-number">{totalHeadcount ?? "—"}</span>
             <span className="stat-subtext">active headcount</span>
           </div>
           <div className="stat-tag-row">
             <span className="badge badge-success">
-              {report ? "Live database query" : "100% seeded roster"}
+              {summary ? "Live database query" : "Loading records"}
             </span>
           </div>
           <div className="stat-footer-text">
-            <span>{departmentCount} synthetic departments</span>
+            <span>{departmentCount ?? "—"} synthetic departments</span>
             <span>All enterprise data</span>
           </div>
         </div>
@@ -163,34 +154,34 @@ export function HRDashboard({
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">{departmentCount}</span>
+            <span className="stat-number">{departmentCount ?? "—"}</span>
             <span className="stat-subtext">functional units</span>
           </div>
           <div className="stat-tag-row">
-            <span className="badge badge-blue-subtle">10 staff per division</span>
+            <span className="badge badge-blue-subtle">Derived from employee records</span>
           </div>
           <div className="stat-footer-text">
-            <span>Eng, Product, Ops, Fin, People</span>
+            <span>{summary?.departments.names.join(", ") || "Loading department names"}</span>
           </div>
         </div>
 
         {/* Card 3: Attrition Rate */}
         <div className="stat-card">
           <div className="stat-card-header">
-            <span className="stat-label">Annual Attrition</span>
+            <span className="stat-label">Historical Exits</span>
             <div className="stat-icon-wrapper icon-emerald">
               <TrendingDown size={18} />
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">6%</span>
-            <span className="stat-subtext">3 exits / 50 records</span>
+            <span className="stat-number">{summary?.employees.exited ?? "—"}</span>
+            <span className="stat-subtext">of {summary?.employees.total ?? "—"} employee records</span>
           </div>
           <div className="stat-tag-row">
-            <span className="badge badge-success">94% annual retention</span>
+            <span className="badge badge-success">No annualized claim</span>
           </div>
           <div className="stat-footer-text">
-            <span>47 active · 3 historic departures</span>
+            <span>{summary ? `${summary.employees.active} active · ${summary.employees.exited} exited` : "Loading source records"}</span>
           </div>
         </div>
 
@@ -203,7 +194,7 @@ export function HRDashboard({
             </div>
           </div>
           <div className="stat-value-group">
-            <span className="stat-number">{openTickets.length}</span>
+            <span className="stat-number">{summary?.tickets.open ?? "—"}</span>
             <span className="stat-subtext">requires action</span>
           </div>
           <div className="stat-tag-row">
@@ -296,7 +287,7 @@ export function HRDashboard({
                 Breakdown of active, leave, and exited employee records.
               </p>
             </div>
-            <span className="badge badge-neutral">Total: 50</span>
+            <span className="badge badge-neutral">Total: {summary?.employees.total ?? "—"}</span>
           </div>
 
           <div className="donut-chart-wrapper">

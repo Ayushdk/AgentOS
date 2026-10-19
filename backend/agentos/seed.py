@@ -21,7 +21,10 @@ def seed_tenant(tenant_id=None, kind="demo"):
         s.flush()
         for i in range(1, 51):
             dept = (i - 1) // 10
-            role = "hr" if i == 50 else ("manager" if i % 10 == 0 else "employee")
+            role = "hr" if i >= 48 else ("manager" if i % 10 == 0 else "employee")
+            manager_id = None
+            if role == "employee":
+                manager_id = f"E{(dept + 1) * 10:03}" if dept < 4 else "E040"
             s.add(
                 Employee(
                     tenant_id=tenant_id,
@@ -29,7 +32,7 @@ def seed_tenant(tenant_id=None, kind="demo"):
                     name=FIRST[(i - 1) % 10] + " " + LAST[dept],
                     department=DEPARTMENTS[dept],
                     role=role,
-                    manager_id=f"E{(dept + 1) * 10:03}" if i % 10 else None,
+                    manager_id=manager_id,
                     joined_on=date(2024 + (i % 3), 1 + ((i * 7) % 9), 1 + (i % 25)),
                     exited_on=date(2026, 8, 28) if i in (8, 28, 38) else None,
                 )

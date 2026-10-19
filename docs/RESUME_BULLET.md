@@ -1,4 +1,4 @@
 # Verified resume bullet
 
-Built AgentOS, a synthetic employee-support portfolio app using FastAPI, Next.js, LangGraph, PostgreSQL/pgvector, Gemini, and a private stdio MCP server with nine scoped tools; implemented cited policy retrieval, contextual follow-ups, restart-safe employee/manager approvals, aggregate HR analytics, and human handoff, with 60/60 fixed deterministic scenarios, 3/3 Playwright journeys, and a bounded live-model smoke test passing.
+Built AgentOS, a synthetic employee-support portfolio app using FastAPI, Next.js, LangGraph, PostgreSQL/pgvector, optional Gemini inference, and a private stdio MCP server with nine scoped tools; implemented cited policy retrieval, contextual follow-ups, restart-safe employee/manager approvals, aggregate HR analytics, and human handoff. The latest local validation passed 84 backend tests, 22 Playwright tests, TypeScript checking, a production build, and Ruff; historical bounded live-model evidence is recorded separately and is not a production-quality benchmark.
 

@@ -57,9 +57,9 @@ test.describe("backend readiness and retry safety", () => {
     });
 
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "AgentOS is still unavailable" })).toBeVisible({ timeout: 40_000 });
+    await expect(page.getByRole("heading", { name: "AgentOS backend is still resuming" })).toBeVisible({ timeout: 40_000 });
     await expect(page.getByRole("button", { name: "Retry connection" })).toBeVisible();
-    await expect(page.getByText("No dashboard data was replaced or cleared.")).toBeVisible();
+    await expect(page.getByText("No session data was cleared.", { exact: false })).toBeVisible();
     expect(healthRequests).toBe(6);
   });
 

@@ -3,8 +3,7 @@
     "argv": [
       "C:\\Program Files\\nodejs\\node.exe",
       "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\node_modules\\@playwright\\test\\cli.js",
-      "test",
-      "tests/journeys.spec.ts"
+      "test"
     ],
     "configFile": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\playwright.config.ts",
     "rootDir": "C:/Users/ayuu2/OneDrive/Desktop/ANGELONE_AGENT/frontend/tests",
@@ -34,7 +33,7 @@
         "testDir": "C:/Users/ayuu2/OneDrive/Desktop/ANGELONE_AGENT/frontend/tests",
         "testIgnore": [],
         "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          "/.*\\.spec\\.ts/"
         ],
         "timeout": 90000
       }
@@ -53,7 +52,7 @@
         "testDir": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\tests",
         "snapshotDir": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\tests",
         "testIgnore": [],
-        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "testMatch": {},
         "timeout": 90000,
         "use": {
           "baseURL": "http://localhost:3000",
@@ -106,6 +105,480 @@
   },
   "suites": [
     {
+      "title": "calendar-clock.spec.ts",
+      "file": "calendar-clock.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Calendar Controlled Clock & Timezone Suite",
+          "file": "calendar-clock.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1. Controlled Clock: Defaults to current month & highlights today (Oct 11, 2026)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1778,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:16.965Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\calendar-clock-Calendar-Co-25e10-ghlights-today-Oct-11-2026--chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "158aad2a7550c8baab4f-9244f93e41c1d583b9d3",
+              "file": "calendar-clock.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "2. Controlled Clock: Leap year handling (Feb 2028 with 29 days) & Today button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1289,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:18.924Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\calendar-clock-Calendar-Co-8a064-8-with-29-days-Today-button-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "158aad2a7550c8baab4f-61df6d5e50e1e73afdbc",
+              "file": "calendar-clock.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "3. Timezone boundary & evening clock (no UTC drift to previous day)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1180,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:20.224Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\calendar-clock-Calendar-Co-2576b--UTC-drift-to-previous-day--chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "158aad2a7550c8baab4f-50a24c6864dd883800bd",
+              "file": "calendar-clock.spec.ts",
+              "line": 60,
+              "column": 7
+            },
+            {
+              "title": "4. Event & Holiday placement: placed only on exact dates with simulation transparency",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1352,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:21.419Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\calendar-clock-Calendar-Co-eb254-ith-simulation-transparency-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "158aad2a7550c8baab4f-b69074851d0c02b2c85e",
+              "file": "calendar-clock.spec.ts",
+              "line": 78,
+              "column": 7
+            },
+            {
+              "title": "5. Employee Dashboard: Dynamic next upcoming holiday from /calendar and empty state handling",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1618,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:22.782Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\calendar-clock-Calendar-Co-df8a5-ar-and-empty-state-handling-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "158aad2a7550c8baab4f-859afb2426bb787b707f",
+              "file": "calendar-clock.spec.ts",
+              "line": 108,
+              "column": 7
+            },
+            {
+              "title": "6. Manager Dashboard: Upcoming availability timeline uses runtime working dates and live holidays",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1218,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:24.412Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\calendar-clock-Calendar-Co-96b48-ing-dates-and-live-holidays-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "158aad2a7550c8baab4f-4e03323e61013b7ac549",
+              "file": "calendar-clock.spec.ts",
+              "line": 136,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "features.spec.ts",
+      "file": "features.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AgentOS Comprehensive Feature Suite",
+          "file": "features.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1. Employee Calendar navigation, holiday detection, and date inspector",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1522,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:25.668Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-67cae-etection-and-date-inspector-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85b3cc1667c06e9efc8f-327c3e60c72a596f7d8b",
+              "file": "features.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "2. Policy Explorer search, document reading, and grounded AI prompts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1421,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:27.203Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-dc20b-ing-and-grounded-AI-prompts-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85b3cc1667c06e9efc8f-790c37b901cb0ef58b52",
+              "file": "features.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "3. Manager Team Members Directory and Team Calendar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3127,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:28.637Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-f8ee7-Directory-and-Team-Calendar-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85b3cc1667c06e9efc8f-1928be2c3aed0c6d505b",
+              "file": "features.spec.ts",
+              "line": 85,
+              "column": 7
+            },
+            {
+              "title": "4. Security role restrictions and unauthorized access barriers",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1152,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:31.772Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-01422-nauthorized-access-barriers-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85b3cc1667c06e9efc8f-0cb2a25d94f20bbe2e0b",
+              "file": "features.spec.ts",
+              "line": 113,
+              "column": 7
+            },
+            {
+              "title": "5. Mobile responsive navigation drawer and interaction",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1587,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:32.938Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\features-AgentOS-Comprehen-413d1-tion-drawer-and-interaction-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85b3cc1667c06e9efc8f-51eebdc71bab9d0240d9",
+              "file": "features.spec.ts",
+              "line": 128,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "journeys.spec.ts",
       "file": "journeys.spec.ts",
       "column": 0,
@@ -127,12 +600,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5632,
+                  "duration": 5760,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-10T20:08:55.920Z",
+                  "startTime": "2026-10-19T20:38:34.542Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -167,12 +640,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3258,
+                  "duration": 2290,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-10T20:09:01.694Z",
+                  "startTime": "2026-10-19T20:38:40.314Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -207,12 +680,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3472,
+                  "duration": 2620,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-10T20:09:04.966Z",
+                  "startTime": "2026-10-19T20:38:42.616Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -232,13 +705,350 @@
           "column": 5
         }
       ]
+    },
+    {
+      "title": "resilience.spec.ts",
+      "file": "resilience.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "backend readiness and retry safety",
+          "file": "resilience.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "a 20-second cold start uses one shared readiness request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21462,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:38:45.253Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-aa6b4-ne-shared-readiness-request-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-f87f6fbcee159dc92875",
+              "file": "resilience.spec.ts",
+              "line": 10,
+              "column": 7
+            },
+            {
+              "title": "a 60-second cold start remains inside the readiness budget",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 85000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 62523,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:39:06.726Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-fa5b5-inside-the-readiness-budget-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-ca695f55ec067dacf4ff",
+              "file": "resilience.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "idempotent GET retries transient 502, 503, and 504 responses",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5111,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:40:09.265Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-842e2-t-502-503-and-504-responses-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-3b1a113d0f7e103e1e78",
+              "file": "resilience.spec.ts",
+              "line": 38,
+              "column": 7
+            },
+            {
+              "title": "permanent unavailability preserves data state and offers retry",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 19449,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:40:14.394Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-33d7d-data-state-and-offers-retry-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-01049c45a4b11df4aa88",
+              "file": "resilience.spec.ts",
+              "line": 52,
+              "column": 7
+            },
+            {
+              "title": "mutations are never automatically retried",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1280,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:40:33.855Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-5063e-never-automatically-retried-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-e534788b760f10f17fe9",
+              "file": "resilience.spec.ts",
+              "line": 66,
+              "column": 7
+            },
+            {
+              "title": "manager bootstrap requests the approval queue once",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1099,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:40:35.147Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-aebde-sts-the-approval-queue-once-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-c39c5bb0d86b249a0e01",
+              "file": "resilience.spec.ts",
+              "line": 81,
+              "column": 7
+            },
+            {
+              "title": "401 authentication failure is not treated as backend unavailability",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 860,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:40:36.256Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-55c40-d-as-backend-unavailability-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-483f1d870bd54368e7fa",
+              "file": "resilience.spec.ts",
+              "line": 95,
+              "column": 7
+            },
+            {
+              "title": "a GET retries once after Supabase refreshes an expired session",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 932,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-19T20:40:37.124Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\ayuu2\\OneDrive\\Desktop\\ANGELONE_AGENT\\frontend\\test-results\\resilience-backend-readine-478b2-efreshes-an-expired-session-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c1cdccb29e536012e9c2-459a2320bd7c1c5d0744",
+              "file": "resilience.spec.ts",
+              "line": 111,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-10T20:08:55.432Z",
-    "duration": 13165.817,
-    "expected": 3,
+    "startTime": "2026-10-19T20:38:16.219Z",
+    "duration": 142055.29,
+    "expected": 22,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

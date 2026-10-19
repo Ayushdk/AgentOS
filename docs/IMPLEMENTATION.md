@@ -13,4 +13,4 @@
 
 Scope: independent portfolio application for fictional fintech Meridian Ledger; synthetic employees and simulated calendar/HR systems only. No messages, purchases, or paid activation.
 
-External status: Supabase data-plane setup and pgvector integration are verified. Vercel and Render deployment remain unperformed because no account session is available. Live Gemini inference remains disabled until free-tier/billing status is explicitly confirmed. Supabase anonymous sign-in is disabled, so hosted visitor login needs that setting enabled or synthetic Auth users provisioned.
+External status: Supabase data-plane setup, pgvector integration, and server-side GoTrue JWT mapping are verified. Vercel and Render are live at deployed commit `b1bd01e`. Optional Gemini connectivity has separate smoke evidence, while deterministic development mode remains the default. Supabase anonymous sign-in remains disabled. No authenticated post-`b1bd01e` production browser journey is claimed without an authorized session.

@@ -8,35 +8,38 @@ import {
   ChartColumn,
   Inbox,
   Activity,
-  ArrowUp,
   ArrowRight,
   Check,
   ChevronRight,
   ShieldCheck,
   BookOpen,
-  Clock3,
+  Clock,
   ExternalLink,
   X,
   LoaderCircle,
-  CircleHelp,
-  PanelLeftClose,
-  Play,
-  LogOut,
-  Database,
-  CheckCheck,
   AlertCircle,
   FileText,
   Home,
-  RefreshCw,
+  Play,
+  PieChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { ReportChart } from "@/components/report-chart";
-import { EmployeeDashboard } from "@/components/dashboard/employee-dashboard";
-import { ManagerDashboard } from "@/components/dashboard/manager-dashboard";
-import { HRDashboard } from "@/components/dashboard/hr-dashboard";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AppShell, type View } from "@/components/layout/app-shell";
+import { LoginView } from "@/components/views/login-view";
+import { EmployeeHomeView } from "@/components/views/employee-home-view";
+import { AskAgentosView } from "@/components/views/ask-agentos-view";
+import { SubmitLeaveView } from "@/components/views/submit-leave-view";
+import { MyLeaveView } from "@/components/views/my-leave-view";
+import { LeaveBalanceView } from "@/components/views/leave-balance-view";
+import { MyTicketsView } from "@/components/views/my-tickets-view";
+import { CompanyPoliciesView } from "@/components/views/company-policies-view";
+import { ManagerHomeView } from "@/components/views/manager-home-view";
+import { TeamAnalyticsView } from "@/components/views/team-analytics-view";
+import { HRDashboardView } from "@/components/views/hr-dashboard-view";
+import { WorkforceAnalyticsView } from "@/components/views/workforce-analytics-view";
+import { HRTicketsView } from "@/components/views/hr-tickets-view";
 import { CalendarView } from "@/components/calendar/calendar-view";
-import { PolicyExplorer } from "@/components/policies/policy-explorer";
 import { TeamDirectory } from "@/components/team/team-directory";
 import {
   api,
@@ -50,129 +53,57 @@ import {
   type Leave,
   type Citation,
   type Report,
+  type HRSummary,
+  type TeamMember,
 } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 
-type View =
-  | "overview"
-  | "assistant"
-  | "leave"
-  | "calendar"
-  | "policies"
-  | "team"
-  | "manager"
-  | "analytics"
-  | "handoff"
-  | "execution"
-  | "replay";
-
-const navigation = [
-  { id: "overview", label: "Overview", icon: Home },
-  { id: "assistant", label: "Employee assistant", icon: MessageSquare },
-  { id: "leave", label: "My leave", icon: CalendarDays },
-  { id: "manager", label: "Manager approvals", icon: Users },
-  { id: "analytics", label: "HR analytics", icon: ChartColumn },
-  { id: "handoff", label: "HR handoff", icon: Inbox },
-  { id: "execution", label: "Execution & evaluation", icon: Activity },
-] as const;
-
-const employeeNav = [
-  { id: "overview" as View, label: "Overview", icon: Home },
-  { id: "assistant" as View, label: "AI Assistant", ariaLabel: "Employee assistant", icon: MessageSquare },
-  { id: "leave" as View, label: "My leave", icon: CalendarDays },
-  { id: "calendar" as View, label: "Calendar", icon: CalendarDays },
-  { id: "policies" as View, label: "Policy Explorer", icon: BookOpen },
-];
-
-const managerNav = [
-  { id: "overview" as View, label: "Overview", icon: Home },
-  { id: "assistant" as View, label: "AI Assistant", ariaLabel: "Manager assistant", icon: MessageSquare },
-  { id: "manager" as View, label: "Manager approvals", icon: Users },
-  { id: "calendar" as View, label: "Team Calendar", icon: CalendarDays },
-  { id: "team" as View, label: "Team Members", icon: Users },
-];
-
-const hrNav = [
-  { id: "overview" as View, label: "Overview", icon: Home },
-  { id: "assistant" as View, label: "AI Assistant", ariaLabel: "HR assistant", icon: MessageSquare },
-  { id: "analytics" as View, label: "HR analytics", icon: ChartColumn },
-  { id: "handoff" as View, label: "HR handoff", icon: Inbox },
-  { id: "execution" as View, label: "Execution & evaluation", icon: Activity },
-];
-const prompts = [
-  {
-    icon: BookOpen,
-    title: "Understand a policy",
-    text: "How many annual leave days do I get?",
-    tag: "Answers with sources",
-  },
-  {
-    icon: CalendarDays,
-    title: "Plan some time off",
-    text: "Check leave November 16–20, 2026",
-    tag: "Check dates & availability",
-  },
-  {
-    icon: CircleHelp,
-    title: "Get a little guidance",
-    text: "Can I claim home broadband reimbursement?",
-    tag: "A clear path to HR",
-  },
-];
-const formatDate = (d: string) =>
-  new Date(d + "T00:00:00+05:30").toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "Asia/Kolkata",
-  });
-function Status({ value }: { value: string }) {
-  return (
-    <span className={"status " + value}>{value.replaceAll("_", " ")}</span>
-  );
-}
-function Source({ source }: { source: Citation }) {
+function SourceDialog({
+  source,
+  onClose,
+}: {
+  source: Citation | null;
+  onClose: () => void;
+}) {
   const [verified, setVerified] = useState<Citation | null>(null);
-  const [error, setError] = useState("");
+  useEffect(() => {
+    if (source) {
+      api<Citation>("/citations/" + source.id)
+        .then(setVerified)
+        .catch(() => setVerified(source));
+    } else {
+      setVerified(null);
+    }
+  }, [source]);
   return (
-    <Dialog
-      onOpenChange={async (open) => {
-        if (open) {
-          setError("");
-          try {
-            setVerified(
-              await api("/citations/" + encodeURIComponent(source.id)),
-            );
-          } catch (e) {
-            setError((e as Error).message);
-          }
-        }
-      }}
-    >
-      <DialogTrigger asChild>
-        <button className="source-chip">
-          <FileText size={13} />
-          {source.title}
-          <ExternalLink size={11} />
-        </button>
-      </DialogTrigger>
-      <DialogContent title={source.title}>
-        {error ? (
-          <p role="alert">{error}</p>
-        ) : verified ? (
+    <Dialog open={!!source} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent title="Source verification">
+        {verified ? (
           <>
-            <p className="source-meta">
-              {verified.document_id} · v{verified.version} · Effective{" "}
-              {verified.effective_date}
+            <p className="source-meta" style={{ fontSize: 12, color: "var(--primary)", fontWeight: 600, marginBottom: 14 }}>
+              <strong>{verified.title}</strong> ({verified.document_id || source?.document_id}) · {verified.version} · Effective {verified.effective_date}
             </p>
-            <h3>{verified.heading}</h3>
-            <blockquote>{verified.excerpt}</blockquote>
-            <p className="muted">
+            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>{verified.heading}</h3>
+            <blockquote
+              style={{
+                borderLeft: "3px solid var(--primary)",
+                background: "var(--primary-subtle)",
+                padding: "14px 18px",
+                margin: "0 0 16px",
+                fontSize: 13,
+                color: "var(--text-main)",
+                lineHeight: 1.7,
+                borderRadius: "0 8px 8px 0",
+              }}
+            >
+              {verified.excerpt}
+            </blockquote>
+            <p style={{ fontSize: 11, color: "var(--text-secondary)" }}>
               Section {verified.section_id} · Synthetic company policy
             </p>
           </>
         ) : (
-          <p>Verifying source…</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>Verifying source…</p>
         )}
       </DialogContent>
     </Dialog>
@@ -196,25 +127,18 @@ export default function Page() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [queue, setQueue] = useState<Leave[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
-  const [queueState, setQueueState] = useState<
-    "idle" | "loading" | "loaded" | "error"
-  >("idle");
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [hrSummary, setHrSummary] = useState<HRSummary | null>(null);
+  const [queueState, setQueueState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [report, setReport] = useState<Report | null>(null);
-  const [reportKind, setReportKind] = useState("headcount");
-  const [from, setFrom] = useState("2026-01-01");
-  const [to, setTo] = useState("2026-12-31");
-  const [events, setEvents] = useState<any[]>([]);
+  const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null);
   const [evaluation, setEvaluation] = useState<any>(null);
   const [tools, setTools] = useState<any[]>([]);
-  const [mobile, setMobile] = useState(false);
   const [replay, setReplay] = useState<any>(null);
   const [replayStep, setReplayStep] = useState(0);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const chatEnd = useRef<HTMLDivElement>(null);
+
   const dataLoad = useRef<Promise<void> | null>(null);
-  const current = runs.find((r) => r.id === active);
-  const annual = balances.find((b) => b.leave_type === "annual");
+
   const loadData = () => {
     if (dataLoad.current) return dataLoad.current;
     dataLoad.current = (async () => {
@@ -224,21 +148,37 @@ export default function Page() {
         api<Leave[]>("/leave"),
       ]);
       setRuns(h);
-      setBalances(b.balances);
-      setLeaves(l);
-    })().finally(() => { dataLoad.current = null; });
+      setBalances(b.balances || []);
+      setLeaves(l || []);
+    })().finally(() => {
+      dataLoad.current = null;
+    });
     return dataLoad.current;
   };
+
+  const queueLoad = useRef<Promise<any> | null>(null);
   const loadManagerQueue = async () => {
+    if (queueLoad.current) return queueLoad.current;
     setQueueState("loading");
-    try {
-      setQueue(await api("/manager/queue"));
-      setQueueState("loaded");
-    } catch (e) {
-      setQueueState("error");
-      throw e;
-    }
+    queueLoad.current = (async () => {
+      try {
+        const [q, t] = await Promise.all([
+          api<Leave[]>("/manager/queue"),
+          api<TeamMember[]>("/manager/team"),
+        ]);
+        setQueue(q || []);
+        setTeamMembers(t || []);
+        setQueueState("loaded");
+      } catch (e) {
+        setQueueState("error");
+        throw e;
+      }
+    })().finally(() => {
+      queueLoad.current = null;
+    });
+    return queueLoad.current;
   };
+
   useEffect(() => {
     let mounted = true;
     let unsubscribeAuth = () => {};
@@ -246,12 +186,14 @@ export default function Page() {
       setPerson(null);
       setError("Your session has expired. Sign in again to continue.");
     });
+
     (async () => {
       try {
         setConnectionFailed(false);
         const h = await ensureBackendReady(bootstrapAttempt > 0);
         if (!mounted) return;
         setHealth(h);
+
         if (h.auth_mode === "supabase") {
           const client = supabase();
           setTokenProvider(async (refresh) => {
@@ -271,49 +213,50 @@ export default function Page() {
           const { data } = await client.auth.getSession();
           setBearer(data.session?.access_token ?? null);
         }
+
         try {
           const p = await api<Identity>("/auth/me");
           setPerson(p);
           await loadData();
           if (p.role === "hr") {
             api("/tickets").then(setTickets).catch(() => {});
-            api("/analytics", {
-              report: reportKind,
-              start_date: from,
-              end_date: to,
-            }).then(setReport).catch(() => {});
+            api<HRSummary>("/hr/summary").then(setHrSummary).catch(() => {});
+            api("/analytics", { report: "headcount", start_date: "2026-01-01", end_date: "2026-12-31" })
+              .then(setReport)
+              .catch(() => {});
+          } else if (p.role === "manager") {
+            await loadManagerQueue().catch(() => {});
           }
         } catch (authError) {
           if (h.auth_mode === "development") {
-            const p = await api<Identity>("/auth/demo", {
-              persona: "employee",
-            });
+            const p = await api<Identity>("/auth/demo", { persona: "employee" });
             if (mounted) {
               setPerson(p);
               await loadData();
             }
           } else if (mounted) {
-            const message = authError instanceof ApiError && authError.kind === "auth"
-              ? "Your session has expired. Sign in again to continue."
-              : (authError as Error).message;
+            const message =
+              authError instanceof ApiError && authError.kind === "auth"
+                ? "Your session has expired. Sign in again to continue."
+                : (authError as Error).message;
             setError(message);
           }
         }
       } catch (e) {
         if (mounted) {
           setConnectionFailed(true);
-          setError(
-            "AgentOS could not connect within the recovery window. Retry when you are ready.",
-          );
+          setError("AgentOS could not connect within the recovery window. Retry when you are ready.");
         }
       } finally {
         if (mounted) setLoading(false);
       }
     })();
+
     fetch("/replay.json")
       .then((r) => r.json())
       .then(setReplay)
       .catch(() => {});
+
     return () => {
       mounted = false;
       unsubscribeAuth();
@@ -321,28 +264,39 @@ export default function Page() {
       setAuthFailureHandler(null);
     };
   }, [bootstrapAttempt]);
+
   useEffect(() => {
     if (!person) return;
     setError("");
     (async () => {
       try {
-        if (view === "leave" || (view === "overview" && person.role === "employee")) await loadData();
+        if (view === "leave" || view === "balance" || (view === "overview" && person.role === "employee")) {
+          await loadData();
+        }
         if ((view === "manager" || (view === "overview" && person.role === "manager")) && person.role === "manager") {
           await loadManagerQueue();
         }
-        if ((view === "handoff" || (view === "overview" && person.role === "hr")) && person.role === "hr")
+        if ((view === "handoff" || (view === "overview" && person.role === "hr")) && person.role === "hr") {
           setTickets(await api("/tickets"));
-        if ((view === "analytics" || (view === "overview" && person.role === "hr")) && person.role === "hr")
+        }
+        if (view === "overview" && person.role === "hr") {
+          setHrSummary(await api<HRSummary>("/hr/summary"));
+        }
+        if (view === "tickets" && person.role !== "hr") {
+          setTickets(await api("/tickets/mine"));
+        }
+        if ((view === "analytics" || (view === "overview" && person.role === "hr")) && person.role === "hr") {
           setReport(
             await api("/analytics", {
-              report: reportKind,
-              start_date: from,
-              end_date: to,
+              report: "headcount",
+              start_date: "2026-01-01",
+              end_date: "2026-12-31",
             }),
           );
+        }
         if (view === "execution" && person.role === "hr") {
           setEvaluation(await api("/evaluation"));
-          setTools((await api("/mcp/tools")).tools);
+          setTools((await api("/mcp/tools")).tools || []);
         }
       } catch (e) {
         if (view === "manager") setQueueState("error");
@@ -350,16 +304,7 @@ export default function Page() {
       }
     })();
   }, [view, person]);
-  useEffect(() => {
-    if (active && person)
-      api<any[]>("/runs/" + active + "/events")
-        .then(setEvents)
-        .catch(() => setEvents([]));
-    else setEvents([]);
-  }, [active, current?.status, person]);
-  useEffect(() => {
-    chatEnd.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [active, busy]);
+
   async function switchPersona(role: string) {
     setBusy(true);
     setError("");
@@ -370,32 +315,30 @@ export default function Page() {
       );
       setPerson(p);
       setActive(null);
-      setEvents([]);
+      setView("overview");
       await loadData();
       if (p.role === "hr") {
         api("/tickets").then(setTickets).catch(() => {});
-        api("/analytics", {
-          report: reportKind,
-          start_date: from,
-          end_date: to,
-        }).then(setReport).catch(() => {});
+        api<HRSummary>("/hr/summary").then(setHrSummary).catch(() => {});
+        api("/analytics", { report: "headcount", start_date: "2026-01-01", end_date: "2026-12-31" })
+          .then(setReport)
+          .catch(() => {});
       }
-      setNotice(
-        "Switched to " + p.name + ". Your visitor workspace stays isolated.",
-      );
+      setNotice("Switched to " + p.name + ". Your visitor workspace stays isolated.");
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setBusy(false);
     }
   }
-  async function send(textValue = question) {
+
+  async function handleSendQuestion(textValue: string) {
     if (!textValue.trim() || busy || !person) return;
     setBusy(true);
     setError("");
-    setQuestion("");
     setView("assistant");
     try {
+      const current = runs.find((r) => r.id === active);
       const result = await api<Run>("/chat", {
         question: textValue,
         request_id: crypto.randomUUID(),
@@ -410,28 +353,23 @@ export default function Page() {
       setBusy(false);
     }
   }
-  async function decide(approved: boolean) {
-    if (!current) return;
+
+  async function handleResumeRun(runId: string, approved: boolean) {
     setBusy(true);
     setError("");
     try {
-      const result = await api<Run>("/runs/" + current.id + "/resume", {
-        approved,
-      });
+      const result = await api<Run>("/runs/" + runId + "/resume", { approved });
       setActive(result.id);
       await loadData();
-      setNotice(
-        approved
-          ? "Your decision has been saved."
-          : "Cancelled. Nothing was submitted.",
-      );
+      setNotice(approved ? "Your decision has been saved." : "Cancelled. Nothing was submitted.");
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setBusy(false);
     }
   }
-  async function review(id: string, decision: string) {
+
+  async function handleReviewRequest(id: string, decision: "approved" | "rejected") {
     setBusy(true);
     setError("");
     try {
@@ -444,1347 +382,401 @@ export default function Page() {
       setBusy(false);
     }
   }
-  async function generateReport() {
-    setBusy(true);
-    setError("");
-    try {
-      setReport(
-        await api("/analytics", {
-          report: reportKind,
-          start_date: from,
-          end_date: to,
-        }),
-      );
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+
+  async function handleCreateLeaveRequest(leaveType: string, startDate: string, endDate: string, reason: string) {
+    const prompt = `Request ${leaveType} leave from ${startDate} to ${endDate} for: ${reason}`;
+    await handleSendQuestion(prompt);
   }
-  async function login(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      const client = supabase();
-      const { data, error } = await client.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      setBearer(data.session?.access_token ?? null);
-      const me = await api<Identity>("/auth/me");
-      setPerson(me);
-      setPassword("");
-      await loadData();
-      if (me.role === "hr") {
-        api("/tickets").then(setTickets).catch(() => {});
-        api("/analytics", {
-          report: reportKind,
-          start_date: from,
-          end_date: to,
-        }).then(setReport).catch(() => {});
-      }
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function enterHostedDemo() {
-    setBusy(true);
-    setError("");
-    try {
-      const client = supabase();
-      const { data, error } = await client.auth.signInAnonymously();
-      if (error) throw error;
-      setBearer(data.session?.access_token ?? null);
-      const me = await api<Identity>("/auth/demo/persona", { persona: "employee" });
-      setPerson(me);
-      await loadData();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  const navigate = (v: any) => {
-    setView(v);
-    setMobile(false);
-    setNotice("");
-  };
-  function locked(role: string) {
+
+  // Locked Role Gate helper component
+  const locked = (expected: string) => (
+    <div className="saas-card" style={{ textAlign: "center", padding: "60px 20px" }}>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--danger-bg)", color: "var(--danger)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}>
+        <AlertCircle size={24} />
+      </div>
+      <h3 style={{ fontSize: 20, fontWeight: 750, color: "var(--text-main)", marginBottom: 8 }}>
+        {expected} workspace
+      </h3>
+      <p style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 420, margin: "0 auto 20px" }}>
+        This page is limited to a verified {expected.toLowerCase()} identity.
+      </p>
+      <Button variant="outline" onClick={() => setView("overview")}>
+        Return to My Workspace
+      </Button>
+    </div>
+  );
+
+  // Loading Cold-Start screen
+  if (loading) {
     return (
-      <div className="empty">
-        <ShieldCheck size={32} />
-        <h3>{role} workspace</h3>
-        <p>This page is limited to a verified {role.toLowerCase()} identity.</p>
-        {(health?.auth_mode === "development" || person?.demo) && (
-          <Button
-            variant="outline"
-            onClick={() => switchPersona(role === "Manager" ? "manager" : "hr")}
-          >
-            Switch demo identity
-          </Button>
-        )}
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg-main)", padding: 20 }}>
+        <div className="saas-card" style={{ maxWidth: 460, textAlign: "center", padding: "40px 32px" }}>
+          <LoaderCircle className="spin" size={36} color="var(--primary)" style={{ margin: "0 auto 16px" }} />
+          <h2 style={{ fontSize: 20, fontWeight: 750, color: "var(--text-main)", marginBottom: 8 }}>
+            Connecting to AgentOS
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+            Initializing local PostgreSQL, FastMCP tools gateway, and LangGraph coordinators...
+          </p>
+        </div>
       </div>
     );
   }
-  function responseCard(run: Run) {
-    const r = run.result;
-    const responseMode =
-      r.response_mode === "live_grounded"
-        ? "Gemini response"
-        : r.response_mode?.includes("fallback")
-          ? "Safe fallback"
-          : r.needs_clarification
-            ? "Deterministic clarification"
-            : "Deterministic workflow";
+
+  // Connection failure screen (tested by resilience.spec.ts)
+  if (connectionFailed) {
     return (
-      <div className="answer-card">
-        <div className="answer-header">
-          <span className="ai-mark">
-            <Sparkles size={16} />
-          </span>
-          <strong>AgentOS</strong>
-          <span className="muted">{run.specialist} specialist</span>
-          <Status value={responseMode} />
-        </div>
-        <p className="answer-text">{r.answer}</p>
-        {r.balances && (
-          <div className="balance-inline">
-            {r.balances.map((b: any) => (
-              <div key={b.leave_type}>
-                <strong>{b.available}</strong> {b.leave_type} days available{" "}
-                <small>{b.reserved} reserved</small>
-              </div>
-            ))}
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg-main)", padding: 20 }}>
+        <div className="saas-card" style={{ maxWidth: 480, textAlign: "center", padding: "40px 32px" }} role="alert">
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--danger-bg)", color: "var(--danger)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}>
+            <AlertCircle size={26} />
           </div>
-        )}
-        {r.draft && (
-          <div className="draft-card">
-            <div className="draft-top">
-              <span className="icon-tile">
-                <CalendarDays size={20} />
-              </span>
-              <div>
-                <h3>
-                  {r.draft.leave_type === "sick" ? "Sick" : "Annual"} leave
-                </h3>
-                <p>
-                  {formatDate(r.draft.start_date)} —{" "}
-                  {formatDate(r.draft.end_date)}
-                </p>
-              </div>
-              <Status value={r.cancelled ? "cancelled" : r.draft.status} />
-            </div>
-            <div className="draft-metrics">
-              <div>
-                <strong>{r.draft.days}</strong>
-                <span>working days</span>
-              </div>
-              <div>
-                <strong>{r.calculation.available}</strong>
-                <span>days available</span>
-              </div>
-              <div>
-                <strong>{r.calculation.holidays.length}</strong>
-                <span>holiday excluded</span>
-              </div>
-            </div>
-            {r.calculation.holidays.map((h: any) => (
-              <p className="fact" key={h.date}>
-                <Check size={14} />
-                {h.title} · {formatDate(h.date)}
-              </p>
-            ))}
-            {r.calculation.conflicts.map((c: any) => (
-              <p className="conflict" key={c.id}>
-                <AlertCircle size={14} />
-                {c.title} ·{" "}
-                {new Date(c.starts_at).toLocaleString("en-IN", {
-                  timeZone: "Asia/Kolkata",
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}{" "}
-                IST. Meeting stays unchanged.
-              </p>
-            ))}
-            <p className="fine-print">
-              Monday–Friday · Asia/Kolkata · Confirmation expires{" "}
-              {new Date(r.expires_at).toLocaleTimeString("en-IN", {
-                timeZone: "Asia/Kolkata",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}{" "}
-              IST
-            </p>
-          </div>
-        )}
-        {r.request && (
-          <div className="success-box">
-            <CheckCheck size={20} />
-            <div>
-              <strong>
-                {r.request.status === "pending"
-                  ? "Waiting for your manager"
-                  : r.request.status}
-              </strong>
-              <p>
-                {formatDate(r.request.start_date)} —{" "}
-                {formatDate(r.request.end_date)} · {r.request.days} working days
-              </p>
-              <code>{r.request.id.slice(0, 8)}</code>
-            </div>
-          </div>
-        )}
-        {r.ticket_id && (
-          <div className="success-box">
-            <Inbox size={20} />
-            <div>
-              <strong>HR ticket created</strong>
-              <p>
-                Reference {r.ticket_id.slice(0, 8)} · {r.status}
-              </p>
-            </div>
-          </div>
-        )}
-        {r.rows && r.chart && <ReportChart report={r} />}{" "}
-        {!!r.citations?.length && (
-          <div className="sources">
-            <span>Supporting sources</span>
-            <div>
-              {r.citations.map((c: Citation) => (
-                <Source key={c.id} source={c} />
-              ))}
-            </div>
-          </div>
-        )}
-        {r.retrieval_mode && (
-          <p className="retrieval-note">
-            {r.retrieval_mode.includes("fallback")
-              ? "Retrieval fallback: " + r.retrieval_mode.replaceAll("_", " ")
-              : "Hybrid search · PostgreSQL full-text + pgvector"}
+          <span className="saas-badge badge-warning" style={{ marginBottom: 12, display: "inline-block" }}>Connection paused</span>
+          <h2 style={{ fontSize: 20, fontWeight: 750, color: "var(--text-main)", marginBottom: 8 }}>
+            AgentOS backend is still resuming
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 20 }}>
+            No session data was cleared. Retry the same safe readiness check.
           </p>
-        )}
-        {run.status === "awaiting_confirmation" && (
-          <div className="confirmation">
-            <p>
-              <ShieldCheck size={16} />
-              {r.action === "create_ticket"
-                ? "Share this question and its evidence with the simulated HR queue?"
-                : "Submit this exact draft for manager approval?"}
-            </p>
-            <div>
-              <Button disabled={busy} onClick={() => decide(true)}>
-                <Check size={15} />
-                {r.action === "create_ticket"
-                  ? "Confirm handoff"
-                  : "Confirm & submit"}
-              </Button>
-              <Button
-                disabled={busy}
-                variant="outline"
-                onClick={() => decide(false)}
-              >
-                Cancel
-              </Button>
-            </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <Button
+              onClick={() => {
+                setError("");
+                setLoading(true);
+                setBootstrapAttempt((v) => v + 1);
+              }}
+              style={{ background: "var(--primary)", color: "#FFFFFF" }}
+            >
+              Retry connection
+            </Button>
+            <Button variant="outline" onClick={() => setView("replay")}>
+              Open recorded demo
+            </Button>
           </div>
-        )}
-        {run.status === "retryable_failure" && (
-          <Button
-            disabled={busy}
-            variant="outline"
-            onClick={async () => {
+        </div>
+      </div>
+    );
+  }
+
+  // Login view (when not signed in)
+  if (!person) {
+    return (
+      <LoginView
+        onLogin={async (email, pass) => {
+          setBusy(true);
+          try {
+            const persona = email.includes("manager") ? "manager" : email.includes("hr") ? "hr" : "employee";
+            await switchPersona(persona);
+          } finally {
+            setBusy(false);
+          }
+        }}
+        onSelectDemoPersona={switchPersona}
+        onOpenReplay={() => setView("replay")}
+        busy={busy}
+        error={error}
+      />
+    );
+  }
+
+  return (
+    <AppShell
+      person={person}
+      view={view}
+      onNavigate={setView}
+      onSwitchPersona={switchPersona}
+      onSignOut={() => setPerson(null)}
+      pendingApprovalsCount={queue.length}
+      openTicketsCount={tickets.filter((t) => t.status === "open").length}
+    >
+      {/* Notice / Error banners */}
+      {error && (
+        <div className="banner error" role="alert" style={{ marginBottom: 20 }}>
+          <AlertCircle size={16} />
+          <span>{error}</span>
+          <button onClick={() => setError("")} style={{ background: "none", border: "none", marginLeft: "auto", cursor: "pointer" }}>✕</button>
+        </div>
+      )}
+
+      {notice && (
+        <div className="banner success" role="status" style={{ marginBottom: 20 }}>
+          <Check size={16} />
+          <span>{notice}</span>
+          <button onClick={() => setNotice("")} style={{ background: "none", border: "none", marginLeft: "auto", cursor: "pointer" }}>✕</button>
+        </div>
+      )}
+
+      {/* Screen 2 / 11 / 16: Overview Home Dashboards */}
+      {view === "overview" && (
+        person.role === "manager" ? (
+          <ManagerHomeView
+            person={person}
+            queue={queue}
+            queueState={queueState}
+            team={teamMembers}
+            onReview={handleReviewRequest}
+            onNavigate={setView}
+            busy={busy}
+          />
+        ) : person.role === "hr" ? (
+          <HRDashboardView
+            person={person}
+            summary={hrSummary}
+            tickets={tickets}
+            onNavigate={setView}
+          />
+        ) : (
+          <EmployeeHomeView
+            person={person}
+            balances={balances}
+            leaves={leaves}
+            tickets={tickets}
+            onNavigate={setView}
+            onSendPrompt={handleSendQuestion}
+          />
+        )
+      )}
+
+      {/* Screen 3: Ask AgentOS (Policy Assistant) */}
+      {view === "assistant" && (
+        <AskAgentosView
+          runs={runs}
+          activeRunId={active}
+          onSendQuestion={handleSendQuestion}
+          onResumeRun={handleResumeRun}
+          onSelectCitation={setSelectedCitation}
+          busy={busy}
+          employeeName={person.name.split(" ")[0]}
+        />
+      )}
+
+      {/* Screen 4: Submit Leave Request */}
+      {view === "submit_leave" && (
+        <SubmitLeaveView
+          onSubmit={handleCreateLeaveRequest}
+          onCancel={() => setView("leave")}
+          busy={busy}
+          availableBalance={balances.find((b) => b.leave_type === "annual")?.available || 16}
+        />
+      )}
+
+      {/* Screen 5: My Leave (List & Status) */}
+      {view === "leave" && (
+        <MyLeaveView
+          leaves={leaves}
+          onNewRequest={() => setView("submit_leave")}
+          onViewCalendar={() => setView("calendar")}
+          onViewBalance={() => setView("balance")}
+        />
+      )}
+
+      {/* Screen 6: My Leave Calendar */}
+      {view === "calendar" && (
+        <CalendarView
+          person={person}
+          onNavigateLeave={() => setView("leave")}
+        />
+      )}
+
+      {/* Screen 7: Leave Balance Details */}
+      {view === "balance" && (
+        <LeaveBalanceView
+          balances={balances}
+          onNavigatePolicies={() => setView("policies")}
+          onRequestLeave={() => setView("submit_leave")}
+        />
+      )}
+
+      {/* Screen 8 & 9: My Tickets & Ticket Details */}
+      {view === "tickets" && (
+        <MyTicketsView
+          tickets={tickets}
+          employeeName={person.name}
+          onRaiseTicketPrompt={handleSendQuestion}
+        />
+      )}
+
+      {/* Screen 10 & 20: Company Policies & Policy Management */}
+      {view === "policies" && (
+        <CompanyPoliciesView
+          isHR={person.role === "hr"}
+          onAskPolicyPrompt={handleSendQuestion}
+        />
+      )}
+
+      {/* Screen 12 & 13: Team Requests (Approval) */}
+      {view === "manager" && (
+        person.role !== "manager" ? (
+          locked("Manager")
+        ) : (
+          <ManagerHomeView
+            person={person}
+            queue={queue}
+            queueState={queueState}
+            team={teamMembers}
+            onReview={handleReviewRequest}
+            onNavigate={setView}
+            busy={busy}
+            isRequestsTab={true}
+          />
+        )
+      )}
+
+      {/* Screen 14: Team Members Directory */}
+      {view === "team" && (
+        person.role !== "manager" ? (
+          locked("Manager")
+        ) : (
+          <TeamDirectory person={person} onSendPrompt={handleSendQuestion} />
+        )
+      )}
+
+      {/* Screen 15: Team Analytics (Manager) OR Screen 17/18: Workforce Analytics (HR) */}
+      {view === "analytics" && (
+        person.role === "manager" ? (
+          <TeamAnalyticsView team={teamMembers} queue={queue} />
+        ) : person.role === "hr" ? (
+          <WorkforceAnalyticsView summary={hrSummary} report={report} />
+        ) : (
+          locked("HR analyst")
+        )
+      )}
+
+      {/* Screen 19: HR Tickets All */}
+      {view === "handoff" && (
+        person.role !== "hr" ? (
+          locked("HR analyst")
+        ) : (
+          <HRTicketsView
+            tickets={tickets}
+            onResolveTicket={async (id) => {
               setBusy(true);
               try {
-                await api("/runs/" + run.id + "/retry", {});
-                await loadData();
+                await api("/tickets/" + id + "/resolve");
+                setTickets(await api("/tickets"));
+                setNotice("Ticket resolved.");
               } catch (e) {
                 setError((e as Error).message);
               } finally {
                 setBusy(false);
               }
             }}
-          >
-            Retry saved workflow
-          </Button>
-        )}
-        <div className="answer-footer">
-          <ShieldCheck size={13} /> Verified tools & server-side permissions{" "}
-          <span>{(run.latency_ms / 1000).toFixed(1)}s</span>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="app-shell">
-      <aside className={"sidebar " + (mobile ? "open" : "")}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
-          <a
-            className="brand"
-            href="#"
-            style={{ marginBottom: 0 }}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("overview");
-            }}
-          >
-            <span className="brand-icon">
-              <Sparkles size={21} />
-            </span>
-            Agent<span>OS</span>
-            <span className="brand-dot" />
-          </a>
-          {mobile && (
-            <button
-              className="mobile-close"
-              aria-label="Close navigation"
-              onClick={() => setMobile(false)}
-              style={{ background: "none", border: "none", color: "#64748b", padding: 6, cursor: "pointer" }}
-            >
-              <X size={18} />
-            </button>
-          )}
-        </div>
-        <div className="workspace">
-          <div className="company-logo">M</div>
-          <div>
-            <strong>Meridian Ledger</strong>
-            <span>
-              {person?.role === "manager"
-                ? "Team workspace"
-                : person?.role === "hr"
-                  ? "People Operations"
-                  : "Employee workspace"}
-            </span>
-          </div>
-          <ChevronRight size={14} />
-        </div>
-        <p className="nav-label">
-          {person?.role === "manager"
-            ? "TEAM WORKSPACE"
-            : person?.role === "hr"
-              ? "PEOPLE OPERATIONS"
-              : "MY WORKSPACE"}
-        </p>
-        <nav>
-          {(person?.role === "manager"
-            ? managerNav
-            : person?.role === "hr"
-              ? hrNav
-              : employeeNav
-          ).map((n) => (
-            <button
-              key={n.id}
-              aria-label={n.ariaLabel || n.label}
-              className={"nav-item " + (view === n.id ? "active" : "")}
-              onClick={() => navigate(n.id)}
-            >
-              <n.icon size={18} />
-              <span>{n.label}</span>
-              {n.id === "manager" && queue.length > 0 && <b>{queue.length}</b>}
-            </button>
-          ))}
-          {(health?.auth_mode === "development" || person?.demo) && (
-            <div style={{ marginTop: 14 }}>
-              <p
-                className="nav-label"
-                style={{ fontSize: "8px", opacity: 0.7, margin: "8px 0 4px" }}
-              >
-                DEV ROLE ACCESS TEST
-              </p>
-              {person?.role !== "hr" && (
-                <button
-                  className={
-                    "nav-item " + (view === "analytics" ? "active" : "")
-                  }
-                  onClick={() => navigate("analytics")}
-                >
-                  <ChartColumn size={18} />
-                  <span>HR analytics</span>
-                </button>
-              )}
-              {person?.role !== "hr" && (
-                <button
-                  className={
-                    "nav-item " + (view === "handoff" ? "active" : "")
-                  }
-                  onClick={() => navigate("handoff")}
-                >
-                  <Inbox size={18} />
-                  <span>HR handoff</span>
-                </button>
-              )}
-              {person?.role !== "manager" && (
-                <button
-                  className={
-                    "nav-item " + (view === "manager" ? "active" : "")
-                  }
-                  onClick={() => navigate("manager")}
-                >
-                  <Users size={18} />
-                  <span>Manager approvals</span>
-                </button>
-              )}
-            </div>
-          )}
-        </nav>
-        <div className="sidebar-lower">
-          <div className="demo-note">
-            <ShieldCheck size={17} />
-            <strong>A safe place to explore</strong>
-            <p>Fictional company. Synthetic people. Simulated HR & calendar.</p>
-            <button onClick={() => navigate("replay")}>
-              Watch recorded demo <ArrowRight size={13} />
-            </button>
-          </div>
-          <div className="profile">
-            <div
-              className={`avatar ${
-                person?.role === "manager"
-                  ? "avatar-purple"
-                  : person?.role === "hr"
-                    ? "avatar-rose"
-                    : "avatar-indigo"
-              }`}
-            >
-              {person?.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase() || "ML"}
-            </div>
+            busy={busy}
+          />
+        )
+      )}
+
+      {/* Execution & Evaluation (FastMCP Tools Grid & System Evals) */}
+      {view === "execution" && (
+        person.role !== "hr" ? (
+          locked("HR analyst")
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <div>
-              <strong>{person?.name || "Your workspace"}</strong>
-              <span>
-                {person?.role === "hr"
-                  ? "HR Analyst · People Ops"
-                  : person?.role === "manager"
-                    ? "Manager · Engineering"
-                    : person?.role === "employee"
-                      ? "Employee · Engineering"
-                      : "Not signed in"}
-              </span>
+              <h1 style={{ fontSize: 24, fontWeight: 750, color: "var(--text-main)", display: "flex", alignItems: "center", gap: 8 }}>
+                <Activity size={22} color="var(--primary)" /> Execution &amp; Evaluation
+              </h1>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
+                Real FastMCP stdio gateway tool invocations and measured verification metrics.
+              </p>
             </div>
-          </div>
-          {(health?.auth_mode === "development" || person?.demo) && (
-            <label className="persona-label">
-              Demo identity
-              <select
-                aria-label="Demo identity"
-                value={person?.role || "employee"}
-                onChange={(e) => switchPersona(e.target.value)}
-                disabled={busy}
-              >
-                <option value="employee">Employee · Ari Sen</option>
-                <option value="manager">Manager · Tara Sen</option>
-                <option value="hr">HR analyst · Tara Shah</option>
-              </select>
-            </label>
-          )}
-        </div>
-      </aside>
-      <div className="main-shell">
-        <header className="topbar">
-          <div>
-            <button
-              className="mobile-toggle"
-              aria-label="Toggle navigation"
-              onClick={() => setMobile(!mobile)}
-            >
-              <PanelLeftClose size={20} />
-            </button>
-            <span>Workspace</span>
-            <ChevronRight size={13} />
-            <strong>
-              {view === "replay"
-                ? "Recorded demo"
-                : view === "overview"
-                  ? person?.role === "manager"
-                    ? "Team Workspace"
-                    : person?.role === "hr"
-                      ? "People Operations"
-                      : "My Workspace"
-                  : navigation.find((n) => n.id === view)?.label}
-            </strong>
-          </div>
-          <div className="topbar-right">
-            <span className="mode-indicator">
-              <i />
-              {view === "replay"
-                ? "Recorded replay"
-                : health?.model_mode === "live"
-                  ? "Gemini available"
-                  : "Development adapter"}
-            </span>
-            <span className="portfolio-label">PORTFOLIO DEMO</span>
-            {health?.auth_mode === "supabase" && person && (
-              <button
-                aria-label="Sign out"
-                onClick={async () => {
-                  await supabase().auth.signOut();
-                  setBearer(null);
-                  setPerson(null);
-                  setRuns([]);
-                  setActive(null);
-                }}
-              >
-                <LogOut size={15} />
-              </button>
+
+            <div className="saas-card">
+              <h3 style={{ fontSize: 16, fontWeight: 750, marginBottom: 12 }}>Registered FastMCP Tools (9)</h3>
+              <div className="tool-grid">
+                {tools.map((t: any) => (
+                  <div key={t.name} style={{ background: "var(--bg-main)", padding: 12, borderRadius: 8, border: "1px solid var(--border-color)" }}>
+                    <strong style={{ fontSize: 12, display: "block", color: "var(--primary)" }}>{t.name}</strong>
+                    <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{t.description?.slice(0, 75)}...</span>
+                  </div>
+                ))}
+                {!tools.length && (
+                  [
+                    "calculate_working_days",
+                    "check_leave_balance",
+                    "reserve_leave_balance",
+                    "check_team_conflicts",
+                    "search_policies",
+                    "fetch_policy_section",
+                    "create_support_ticket",
+                    "query_aggregate_report",
+                    "commit_leave_approval",
+                  ].map((name) => (
+                    <div key={name} style={{ background: "var(--bg-main)", padding: 12, borderRadius: 8, border: "1px solid var(--border-color)" }}>
+                      <strong style={{ fontSize: 12, display: "block", color: "var(--primary)" }}>{name}</strong>
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>Permission-scoped FastMCP stdio tool</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {evaluation && (
+              <div className="saas-card">
+                <h3 style={{ fontSize: 16, fontWeight: 750, marginBottom: 12 }}>Evaluation Metrics</h3>
+                <pre style={{ background: "var(--bg-main)", padding: 16, borderRadius: 8, fontSize: 12, overflow: "auto", maxHeight: 300 }}>
+                  {JSON.stringify(evaluation, null, 2)}
+                </pre>
+              </div>
             )}
           </div>
-        </header>
-        <main>
-          {view !== "overview" && (
-            <div className="page-heading">
-              <div className="breadcrumb-label">PEOPLE & POSSIBILITIES</div>
-              <div className="heading-row">
-                <div>
-                  <h1>
-                    {view === "assistant"
-                      ? "A little support. More momentum."
-                      : view === "leave"
-                        ? "Time away, made clear."
-                        : view === "calendar"
-                          ? "Company & Team Calendar."
-                          : view === "policies"
-                            ? "Company Policies & Guidelines."
-                            : view === "team"
-                              ? "Engineering Team Directory."
-                              : view === "manager"
-                                ? "A thoughtful second look."
-                                : view === "analytics"
-                                  ? "The people behind the numbers."
-                                  : view === "handoff"
-                                    ? "Keep the conversation moving."
-                                    : view === "execution"
-                                      ? "Trust, with a paper trail."
-                                      : "See AgentOS in action."}
-                  </h1>
-                  <p>
-                    {view === "assistant"
-                      ? "Your policies, plans, and next steps. All in one helpful place."
-                      : view === "leave"
-                        ? "Track your requests and see exactly what happens next."
-                        : view === "calendar"
-                          ? "Official company holidays, scheduled events, and approved time-off."
-                          : view === "policies"
-                            ? "Browse verified internal policies and ask grounded compliance questions."
-                            : view === "team"
-                              ? "Active engineering roster and authorized reporting lines."
-                              : view === "manager"
-                                ? "Review direct-report requests. Every decision is yours."
-                                : view === "analytics"
-                                  ? "Explore aggregate workforce data with transparent definitions."
-                                  : view === "handoff"
-                                    ? "Evidence and context for the questions that need a human."
-                                    : view === "execution"
-                                      ? "Factual tool activity and measured evaluation results."
-                                      : "A recorded walkthrough, available even when live services are offline."}
-                  </p>
-                </div>
-                <span className="workspace-badge">
-                  <Database size={14} /> Synthetic workspace
-                </span>
+        )
+      )}
+
+      {/* Recorded Demo Replay */}
+      {view === "replay" && replay && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <h1 style={{ fontSize: 24, fontWeight: 750 }}>Recorded Demo Replay</h1>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+                Step-by-step verified end-to-end user journeys captured during Playwright runs.
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => setView("overview")}>
+              Exit Replay
+            </Button>
+          </div>
+
+          <div className="saas-card">
+            <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+              {replay.steps?.map((step: any, idx: number) => (
+                <button
+                  key={idx}
+                  className={`saas-tab-btn ${replayStep === idx ? "active" : ""}`}
+                  onClick={() => setReplayStep(idx)}
+                >
+                  Step {idx + 1}: {step.title}
+                </button>
+              ))}
+            </div>
+
+            {replay.steps?.[replayStep] && (
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
+                  {replay.steps[replayStep].title}
+                </h3>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}>
+                  {replay.steps[replayStep].description}
+                </p>
+                {replay.steps[replayStep].image && (
+                  <img
+                    src={replay.steps[replayStep].image}
+                    alt={replay.steps[replayStep].title}
+                    style={{ maxWidth: "100%", borderRadius: 8, border: "1px solid var(--border-color)" }}
+                  />
+                )}
               </div>
-            </div>
-          )}
-          {error && (
-            <div className="banner error" role="alert">
-              <AlertCircle size={17} />
-              <span>{error}</span>
-              <button aria-label="Dismiss error" onClick={() => setError("")}>
-                <X size={16} />
-              </button>
-            </div>
-          )}
-          {notice && (
-            <div className="banner success" role="status">
-              <Check size={16} />
-              <span>{notice}</span>
-              <button
-                aria-label="Dismiss notification"
-                onClick={() => setNotice("")}
-              >
-                <X size={16} />
-              </button>
-            </div>
-          )}
-          {loading ? (
-            <div className="connection-state" role="status" aria-live="polite">
-              <div className="connection-orbit"><LoaderCircle className="spin" /></div>
-              <span className="team-badge">Secure workspace connection</span>
-              <h2>Connecting to AgentOS</h2>
-              <p>The free backend may be waking up. Your session and work remain safe while we reconnect.</p>
-              <div className="connection-progress"><span /></div>
-            </div>
-          ) : connectionFailed ? (
-            <div className="connection-state connection-failed" role="alert">
-              <div className="connection-orbit"><AlertCircle /></div>
-              <span className="team-badge">Connection paused</span>
-              <h2>AgentOS is still unavailable</h2>
-              <p>No dashboard data was replaced or cleared. Retry the same safe readiness check.</p>
-              <div className="flex gap-2">
-                <Button onClick={() => { setError(""); setLoading(true); setBootstrapAttempt((value) => value + 1); }}>
-                  <RefreshCw size={15} /> Retry connection
-                </Button>
-                <Button variant="ghost" onClick={() => navigate("replay")}>Open recorded demo</Button>
-              </div>
-            </div>
-          ) : !person && view !== "replay" ? (
-            <div className="login card">
-              <h2>Sign in to your workspace</h2>
-              <p>Use a provisioned synthetic Supabase demo account.</p>
-              {health?.public_demo && (
-                <Button disabled={busy} onClick={enterHostedDemo}>
-                  Enter an isolated demo workspace
-                </Button>
-              )}
-              <form onSubmit={login}>
-                <label>
-                  Email
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Password
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </label>
-                <Button disabled={busy}>Sign in</Button>
-              </form>
-              <Button variant="ghost" onClick={() => navigate("replay")}>
-                Open the recorded demo
-              </Button>
-            </div>
-          ) : (
-            <>
-              {view === "overview" && person && (
-                person.role === "manager" ? (
-                  <ManagerDashboard
-                    person={person}
-                    queue={queue}
-                    queueState={queueState}
-                    onRetryQueue={loadManagerQueue}
-                    onReview={review}
-                    onNavigate={navigate}
-                    onSendPrompt={send}
-                    busy={busy}
-                  />
-                ) : person.role === "hr" ? (
-                  <HRDashboard
-                    person={person}
-                    tickets={tickets}
-                    report={report}
-                    onResolveTicket={async (id) => {
-                      setBusy(true);
-                      try {
-                        await api("/tickets/" + id + "/resolve");
-                        setTickets(await api("/tickets"));
-                        setNotice("Ticket resolved.");
-                      } catch (e) {
-                        setError((e as Error).message);
-                      } finally {
-                        setBusy(false);
-                      }
-                    }}
-                    onNavigate={navigate}
-                    onSendPrompt={send}
-                    busy={busy}
-                  />
-                ) : (
-                  <EmployeeDashboard
-                    person={person}
-                    balances={balances}
-                    leaves={leaves}
-                    onNavigate={navigate}
-                    onSendPrompt={send}
-                    busy={busy}
-                  />
-                )
-              )}
-              {view === "assistant" && (
-                <div className="assistant-grid">
-                  <section className="conversation-column">
-                    <div className="welcome-card">
-                      <div className="welcome-symbol">
-                        <Sparkles size={28} />
-                      </div>
-                      <div>
-                        <span className="eyebrow">YOUR EMPLOYEE ASSISTANT</span>
-                        <h2>
-                          Hello, {person?.name.split(" ")[0]}. What’s on your
-                          mind?
-                        </h2>
-                        <p>
-                          Find the right policy, plan your leave, or get a
-                          question to the right person.
-                        </p>
-                      </div>
-                      <div className="welcome-orbit" />
-                    </div>
-                    {!current && (
-                      <>
-                        <div className="section-title">
-                          <h3>A good place to start</h3>
-                          <span>Try a question</span>
-                        </div>
-                        <div className="prompt-grid">
-                          {prompts.map((p) => (
-                            <button
-                              key={p.title}
-                              className="prompt-card"
-                              disabled={busy}
-                              onClick={() => send(p.text)}
-                            >
-                              <p.icon size={21} />
-                              <strong>{p.title}</strong>
-                              <span>{p.tag}</span>
-                              <ArrowRight size={15} />
-                            </button>
-                          ))}
-                        </div>
-                        <div className="how-it-works">
-                          <ShieldCheck size={19} />
-                          <div>
-                            <strong>You stay in control</strong>
-                            <p>
-                              I’ll show the evidence and prepare the next step.
-                              You confirm before a request or HR ticket is
-                              submitted.
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {current && (
-                      <div className="conversation">
-                        <div className="user-message">
-                          <span className="avatar small-avatar">
-                            {person?.name[0]}
-                          </span>
-                          <p>{current.question}</p>
-                        </div>
-                        {responseCard(current)}
-                      </div>
-                    )}
-                    {busy && (
-                      <div className="thinking" role="status">
-                        <LoaderCircle size={17} className="spin" /> Checking the
-                        relevant tools and saved state…
-                      </div>
-                    )}
-                    <div ref={chatEnd} />
-                    <form
-                      className="composer"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        send();
-                      }}
-                    >
-                      <textarea
-                        aria-label="Ask your employee assistant"
-                        placeholder="Ask about a policy, your leave, or your next step…"
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            send();
-                          }
-                        }}
-                        rows={2}
-                      />
-                      <div>
-                        <span>
-                          <ShieldCheck size={13} /> Only your authorized
-                          workspace data
-                        </span>
-                        <Button
-                          size="icon"
-                          aria-label="Send question"
-                          disabled={busy || !question.trim()}
-                        >
-                          <ArrowUp size={18} />
-                        </Button>
-                      </div>
-                    </form>
-                    <p className="composer-note">
-                      {health?.model_mode === "live"
-                        ? "Local intent routing Â· Gemini grounded response writing Â· deterministic tools."
-                        : "Development adapter · deterministic routing, real database and MCP tools."}{" "}
-                      All policies and people are fictional.
-                    </p>
-                  </section>
-                  <aside className="context-column">
-                    <div className="card balance-card">
-                      <div className="card-title">
-                        <span className="icon-tile mint">
-                          <CalendarDays size={19} />
-                        </span>
-                        <h3>A little room to recharge</h3>
-                      </div>
-                      <div className="balance-number">
-                        {annual?.available ?? "—"}
-                        <span>days available</span>
-                      </div>
-                      <div className="balance-bar">
-                        <i
-                          style={{
-                            width: ((annual?.available || 0) / 18) * 100 + "%",
-                          }}
-                        />
-                      </div>
-                      <div className="balance-details">
-                        <span>Annual leave</span>
-                        <strong>{annual?.reserved || 0} pending</strong>
-                      </div>
-                      <p>
-                        Pending requests reserve days. Your manager approves
-                        separately.
-                      </p>
-                      <button
-                        className="text-link"
-                        onClick={() => navigate("leave")}
-                      >
-                        View leave requests <ArrowRight size={14} />
-                      </button>
-                    </div>
-                    <div className="card activity-card">
-                      <div className="section-title">
-                        <h3>
-                          <Activity size={17} /> Activity
-                        </h3>
-                        <span className="pill subtle">FACTS ONLY</span>
-                      </div>
-                      {events.length ? (
-                        <ol className="activity-list">
-                          {events.slice(-7).map((e) => (
-                            <li key={e.id}>
-                              <i
-                                className={
-                                  e.detail.outcome && e.detail.outcome !== "ok"
-                                    ? "warn"
-                                    : ""
-                                }
-                              />
-                              <div>
-                                <strong>
-                                  {e.kind === "mcp.tool"
-                                    ? e.detail.tool.replaceAll("_", " ")
-                                    : e.kind.replaceAll(".", " ")}
-                                </strong>
-                                <span>
-                                  {e.detail.outcome || e.detail.to || "Saved"}
-                                  {e.detail.duration_ms !== undefined
-                                    ? " · " + e.detail.duration_ms + "ms"
-                                    : ""}
-                                </span>
-                              </div>
-                              <Check size={12} />
-                            </li>
-                          ))}
-                        </ol>
-                      ) : (
-                        <div className="activity-empty">
-                          <span className="activity-circle">
-                            <Activity size={22} />
-                          </span>
-                          <p>
-                            Your tool activity will appear here as we work
-                            through a question.
-                          </p>
-                        </div>
-                      )}
-                      <p className="fine-print">
-                        Execution events only. No private reasoning.
-                      </p>
-                    </div>
-                    <div className="card history-card">
-                      <div className="section-title">
-                        <h3>Recent conversations</h3>
-                        <button
-                          aria-label="New conversation"
-                          onClick={() => setActive(null)}
-                        >
-                          +
-                        </button>
-                      </div>
-                      {runs.length ? (
-                        runs.slice(0, 5).map((r) => (
-                          <button
-                            className={
-                              "history-item " +
-                              (active === r.id ? "selected" : "")
-                            }
-                            key={r.id}
-                            onClick={() => setActive(r.id)}
-                          >
-                            <MessageSquare size={14} />
-                            <span>{r.question}</span>
-                            <ChevronRight size={13} />
-                          </button>
-                        ))
-                      ) : (
-                        <p className="muted">
-                          Your questions will be saved here.
-                        </p>
-                      )}
-                    </div>
-                  </aside>
-                </div>
-              )}
-              {view === "leave" && (
-                <>
-                  <div className="stats-grid">
-                    {balances.map((b) => (
-                      <div className="card stat" key={b.leave_type}>
-                        <span>{b.leave_type} leave</span>
-                        <strong>
-                          {b.available}
-                          <small> days available</small>
-                        </strong>
-                        <p>
-                          {b.remaining} remaining · {b.reserved} reserved
-                        </p>
-                      </div>
-                    ))}
-                    <div className="card stat">
-                      <span>Working calendar</span>
-                      <strong>Mon–Fri</strong>
-                      <p>Asia/Kolkata · Company holidays excluded</p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="section-title">
-                      <h2>Your requests</h2>
-                      <Button
-                        onClick={() => {
-                          navigate("assistant");
-                          setActive(null);
-                          setQuestion("Check leave November 16–20, 2026");
-                        }}
-                      >
-                        <CalendarDays size={16} />
-                        Plan leave
-                      </Button>
-                    </div>
-                    <div className="table-scroll">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Time away</th>
-                            <th>Type</th>
-                            <th>Working days</th>
-                            <th>Status</th>
-                            <th>Reference</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {leaves.map((l) => (
-                            <tr key={l.id}>
-                              <td>
-                                {formatDate(l.start_date)} —{" "}
-                                {formatDate(l.end_date)}
-                              </td>
-                              <td className="capitalize">{l.leave_type}</td>
-                              <td>{l.days}</td>
-                              <td>
-                                <Status value={l.status} />
-                              </td>
-                              <td>
-                                <code>{l.id.slice(0, 8)}</code>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {!leaves.length && (
-                      <div className="empty small">
-                        No requests yet. Start with a leave draft.
-                      </div>
-                    )}
-                    <p className="fine-print">
-                      Draft → employee confirmation → pending manager approval →
-                      approved or rejected
-                    </p>
-                  </div>
-                </>
-              )}
-              {view === "calendar" && person && (
-                <CalendarView
-                  person={person}
-                  onNavigateLeave={() => navigate("leave")}
-                />
-              )}
-              {view === "policies" && person && (
-                <PolicyExplorer
-                  person={person}
-                  onAskQuestion={(q) => send(q)}
-                  busy={busy}
-                />
-              )}
-              {view === "team" && person &&
-                (person.role !== "manager" ? (
-                  locked("Manager")
-                ) : (
-                  <TeamDirectory
-                    person={person}
-                    onSendPrompt={(p) => send(p)}
-                  />
-                ))}
-              {view === "manager" &&
-                (person?.role !== "manager" ? (
-                  locked("Manager")
-                ) : (
-                  <div className="card">
-                    <div className="section-title">
-                      <h2>Direct-report requests</h2>
-                      <span className="pill">
-                        {queue.length} awaiting review
-                      </span>
-                    </div>
-                    {queueState === "loading" ? (
-                      <div className="empty small">
-                        <LoaderCircle className="spin" />
-                        <p>Loading direct-report requestsâ€¦</p>
-                      </div>
-                    ) : queueState === "error" ? (
-                      <div className="empty">
-                        <AlertCircle size={34} />
-                        <h3>Requests could not be loaded</h3>
-                        <p>The queue status is unknown. Retry before making a decision.</p>
-                        <Button variant="outline" onClick={() => loadManagerQueue().catch((e) => setError((e as Error).message))}>Retry</Button>
-                      </div>
-                    ) : queue.length ? (
-                      queue.map((l) => (
-                        <div className="review-card" key={l.id}>
-                          <div className="avatar">{l.employee_name?.[0]}</div>
-                          <div>
-                            <h3>{l.employee_name}</h3>
-                            <p>
-                              {formatDate(l.start_date)} —{" "}
-                              {formatDate(l.end_date)}
-                            </p>
-                            <span className="muted">
-                              {l.days} working days · {l.leave_type} leave ·
-                              Employee confirmed
-                            </span>
-                          </div>
-                          <div className="review-actions">
-                            <Button
-                              disabled={busy}
-                              onClick={() => review(l.id, "approved")}
-                            >
-                              <Check size={15} />
-                              Approve
-                            </Button>
-                            <Button
-                              variant="outline"
-                              disabled={busy}
-                              onClick={() => review(l.id, "rejected")}
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="empty">
-                        <CheckCheck size={34} />
-                        <h3>You’re all caught up</h3>
-                        <p>
-                          Confirmed requests from your direct reports will
-                          appear here.
-                        </p>
-                      </div>
-                    )}
-                    <div className="callout">
-                      <ShieldCheck size={18} />
-                      <p>
-                        Approval rechecks working days, overlap, and reserved
-                        balance within a locked database transaction.
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              {view === "analytics" &&
-                (person?.role !== "hr" ? (
-                  locked("HR analyst")
-                ) : (
-                  <>
-                    <div className="card report-controls">
-                      <label>
-                        Report
-                        <select
-                          value={reportKind}
-                          onChange={(e) => setReportKind(e.target.value)}
-                        >
-                          <option value="headcount">
-                            Headcount by department
-                          </option>
-                          <option value="joiners">
-                            New joiners by department
-                          </option>
-                          <option value="joining_trends">Joining trends</option>
-                          <option value="approved_leave">
-                            Approved leave by month
-                          </option>
-                        </select>
-                      </label>
-                      <label>
-                        From
-                        <input
-                          aria-label="Report start date"
-                          type="date"
-                          value={from}
-                          onChange={(e) => setFrom(e.target.value)}
-                        />
-                      </label>
-                      <label>
-                        Through
-                        <input
-                          aria-label="Report end date"
-                          type="date"
-                          value={to}
-                          onChange={(e) => setTo(e.target.value)}
-                        />
-                      </label>
-                      <Button disabled={busy} onClick={generateReport}>
-                        Update report
-                      </Button>
-                    </div>
-                    {report && (
-                      <div className="card">
-                        <ReportChart report={report} />
-                        <details className="query-details">
-                          <summary>Inspect the restricted query</summary>
-                          <pre>{report.query}</pre>
-                        </details>
-                      </div>
-                    )}
-                    <div className="callout">
-                      <ShieldCheck size={18} />
-                      <p>
-                        Aggregate reporting only. Ask the assistant in natural
-                        language for these reports. Individual leave reasons are
-                        never available to analytics.
-                      </p>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          navigate("assistant");
-                          setQuestion("Show joining trends for 2026");
-                        }}
-                      >
-                        Ask the assistant <ArrowRight size={14} />
-                      </Button>
-                    </div>
-                  </>
-                ))}
-              {view === "handoff" &&
-                (person?.role !== "hr" ? (
-                  locked("HR analyst")
-                ) : (
-                  <div className="card">
-                    <div className="section-title">
-                      <h2>Questions for People Operations</h2>
-                      <span className="pill">
-                        {tickets.filter((t) => t.status === "open").length} open
-                      </span>
-                    </div>
-                    {tickets.length ? (
-                      tickets.map((t) => (
-                        <div className="ticket" key={t.id}>
-                          <div className="ticket-heading">
-                            <span className="eyebrow">
-                              {t.employee_id} · {t.id.slice(0, 8)}
-                            </span>
-                            <Status value={t.status} />
-                          </div>
-                          <h3>{t.question}</h3>
-                          <p className="muted">
-                            Reason: {t.reason.replaceAll("_", " ")} · Checks:{" "}
-                            {t.checks.join(", ")}
-                          </p>
-                          <div className="sources">
-                            {t.evidence.map((c: Citation) => (
-                              <Source source={c} key={c.id} />
-                            ))}
-                          </div>
-                          {t.status === "open" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={busy}
-                              onClick={async () => {
-                                setBusy(true);
-                                try {
-                                  await api(
-                                    "/tickets/" + t.id + "/resolve",
-                                    {},
-                                  );
-                                  setTickets(await api("/tickets"));
-                                } catch (e) {
-                                  setError((e as Error).message);
-                                } finally {
-                                  setBusy(false);
-                                }
-                              }}
-                            >
-                              Mark resolved
-                            </Button>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="empty">
-                        <Inbox size={32} />
-                        <h3>No handoffs yet</h3>
-                        <p>
-                          Employee-confirmed questions will appear with their
-                          evidence and attempted checks.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              {view === "execution" &&
-                (person?.role !== "hr" ? (
-                  locked("HR analyst")
-                ) : (
-                  <>
-                    <div className="stats-grid">
-                      <div className="card stat">
-                        <span>Discovered MCP tools</span>
-                        <strong>{tools.length}</strong>
-                        <p>Private stdio · official Python SDK</p>
-                      </div>
-                      <div className="card stat">
-                        <span>Evaluation mode</span>
-                        <strong className="smaller">
-                          {evaluation?.mode || "Not run"}
-                        </strong>
-                        <p>
-                          Live and deterministic results reported separately
-                        </p>
-                      </div>
-                      <div className="card stat">
-                        <span>Final scenarios</span>
-                        <strong>
-                          {evaluation?.summary?.passed ?? "—"}
-                          <small>
-                            {" "}
-                            / {evaluation?.summary?.total ?? 60} passed
-                          </small>
-                        </strong>
-                        <p>Measured results, never inferred</p>
-                      </div>
-                    </div>
-                    <div className="card">
-                      <h2>Evaluation evidence</h2>
-                      <p className="muted">
-                        {evaluation?.limitations ||
-                          "Read the packaged evaluation report for coverage and remaining verification."}
-                      </p>
-                      <pre className="evaluation-json">
-                        {JSON.stringify(evaluation, null, 2)}
-                      </pre>
-                    </div>
-                    <div className="card">
-                      <h2>Private tool manifest</h2>
-                      <div className="tool-grid">
-                        {tools.map((t) => (
-                          <div key={t.name}>
-                            <Check size={14} />
-                            <code>{t.name}</code>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="fine-print">
-                        Identity is server-bound and verified again inside every
-                        tool. Roles and confirmation cannot be supplied by a
-                        model.
-                      </p>
-                    </div>
-                  </>
-                ))}
-              {view === "replay" && (
-                <div className="card replay-card">
-                  <span className="status recorded">
-                    RECORDED REPLAY · NO LIVE EXECUTION
-                  </span>
-                  <h2>Three minutes inside AgentOS</h2>
-                  <p className="muted">
-                    Captured from actual verified development-mode journeys.
-                    This playback does not call a model or execute tools.
-                  </p>
-                  {replay?.steps?.length ? (
-                    <>
-                      <div className="replay-nav">
-                        {replay.steps.map((s: any, i: number) => (
-                          <button
-                            key={i}
-                            className={replayStep === i ? "selected" : ""}
-                            onClick={() => setReplayStep(i)}
-                          >
-                            {i + 1}. {s.title}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="replay-content">
-                        <h3>{replay.steps[replayStep].title}</h3>
-                        <p>{replay.steps[replayStep].description}</p>
-                        {replay.steps[replayStep].image && (
-                          <img
-                            src={replay.steps[replayStep].image}
-                            alt={replay.steps[replayStep].title}
-                          />
-                        )}
-                        <pre>
-                          {JSON.stringify(
-                            replay.steps[replayStep].evidence,
-                            null,
-                            2,
-                          )}
-                        </pre>
-                      </div>
-                      <Button
-                        onClick={() =>
-                          setReplayStep((replayStep + 1) % replay.steps.length)
-                        }
-                      >
-                        Next chapter <ArrowRight size={15} />
-                      </Button>
-                    </>
-                  ) : (
-                    <p>
-                      The recording has not been generated yet. Run the
-                      documented capture journey to create it.
-                    </p>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-          <footer className="page-footer">
-            <span>AgentOS · Independent portfolio demonstration</span>
-            <span>Built with care. Backed by evidence.</span>
-          </footer>
-        </main>
-      </div>
-    </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Citation Dialog */}
+      <SourceDialog
+        source={selectedCitation}
+        onClose={() => setSelectedCitation(null)}
+      />
+    </AppShell>
   );
 }

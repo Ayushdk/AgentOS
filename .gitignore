@@ -16,4 +16,5 @@ test-results/
 artifacts/package/
 %SystemDrive%/
 .DS_Store
+.vscode/
 *.tsbuildinfo

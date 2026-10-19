@@ -8,9 +8,10 @@ from agentos import auth, services
 from agentos.analytics import validate_sql
 from agentos.config import Settings, settings
 from agentos.db import transaction
+from agentos.demo_seed import RICH_TENANT_ID, plan, reset_local_demo, seed_rich_demo, stable_id
 from agentos.errors import DomainError
 from agentos.model import development_plan
-from agentos.models import AuthIdentity, Leave, now, uid
+from agentos.models import AuthIdentity, Leave, Ticket, now, uid
 from agentos.public_demo import select_demo_persona
 from agentos.retrieval import search_policies
 from agentos.seed import seed_tenant
@@ -249,8 +250,8 @@ def test_same_idempotency_key_cannot_change_parameters(actor):
 def test_parallel_distinct_submissions_cannot_overspend(actor):
     # Each is individually affordable at draft time, but both cannot reserve 20 days.
     drafts = [
-        services.prepare_leave_request(actor, "2026-10-12", "2026-10-23", "annual", uid()),
-        services.prepare_leave_request(actor, "2026-11-02", "2026-11-13", "annual", uid()),
+        services.prepare_leave_request(actor, "2099-01-05", "2099-01-16", "annual", uid()),
+        services.prepare_leave_request(actor, "2099-01-19", "2099-01-30", "annual", uid()),
     ]
     for d in drafts:
         services.confirm_approval(actor, d["approval_id"], True)
@@ -424,4 +425,63 @@ def test_employee_account_data_isolation():
     with pytest.raises(DomainError) as exc_info:
         services.confirm_approval(other, draft["approval_id"], True)
     assert exc_info.value.code == "not_found"
+
+
+def test_rich_demo_seed_is_deterministic_idempotent_and_validated():
+    assert plan()["leave_requests"] == 70
+    assert stable_id("leave", 3) == stable_id("leave", 3)
+    first = seed_rich_demo(RICH_TENANT_ID)
+    second = seed_rich_demo(RICH_TENANT_ID)
+    assert first == second
+    assert first["employees"] == 50
+    assert first["departments"] == 5
+    assert first["managers"] == 4
+    assert first["leave_requests"] == 75
+    assert first["hr_tickets"] == 40
+    assert first["hr_users"] == 3
+    assert not first["invalid_manager_links"]
+    assert not first["invalid_leave_rows"]
+
+
+def test_demo_reset_refuses_without_explicit_environment_acknowledgement(monkeypatch):
+    monkeypatch.delenv("DEMO_ENVIRONMENT", raising=False)
+    with pytest.raises(RuntimeError, match="DEMO_ENVIRONMENT=true"):
+        reset_local_demo(RICH_TENANT_ID)
+
+
+def test_employee_ticket_reads_are_owner_scoped_and_hr_summary_is_derived():
+    from agentos.api import app
+
+    tenant = seed_tenant()
+    employee = auth.resolve_identity(tenant, "E001")
+    other = auth.resolve_identity(tenant, "E002")
+    hr = auth.resolve_identity(tenant, "E050")
+    with transaction() as session:
+        ticket = Ticket(
+            tenant_id=tenant,
+            employee_id="E001",
+            run_id=uid(),
+            question="Synthetic ownership test",
+            evidence=[],
+            checks=["owner_scope"],
+            reason="test_fixture",
+        )
+        session.add(ticket)
+        session.flush()
+        ticket_id = ticket.id
+
+    with TestClient(app) as client:
+        mine = client.get("/tickets/mine", cookies={"agentos_session": auth.sign(employee)})
+        assert mine.status_code == 200
+        assert [row["id"] for row in mine.json()] == [ticket_id]
+        assert client.get(
+            f"/tickets/{ticket_id}", cookies={"agentos_session": auth.sign(other)}
+        ).status_code == 404
+        summary = client.get("/hr/summary", cookies={"agentos_session": auth.sign(hr)})
+        assert summary.status_code == 200
+        assert summary.json()["employees"] == {"total": 50, "active": 47, "exited": 3}
+        assert summary.json()["tickets"]["open"] == 1
+        assert client.get(
+            "/hr/summary", cookies={"agentos_session": auth.sign(employee)}
+        ).status_code == 403
 

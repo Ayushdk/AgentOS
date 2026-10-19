@@ -159,7 +159,7 @@ export async function api<T = any>(path: string, body?: unknown): Promise<T> {
 
 export type Identity={tenant_id:string;employee_id:string;role:'employee'|'manager'|'hr';name:string;demo?:boolean};
 export type Citation={id:string;document_id:string;title:string;version:string;effective_date:string;section_id:string;heading:string;excerpt:string};
-export type Run={id:string;question:string;status:string;mode:string;specialist:string;result:any;created_at:string;latency_ms:number;model_calls:number};
+export type Run={id:string;question:string;status:string;mode:string;specialist:string;result:any;created_at:string;latency_ms:number;model_calls:number;handoff_status?:string};
 export type Leave={id:string;start_date:string;end_date:string;leave_type:string;days:number;status:string;employee_id:string;employee_name?:string};
 export type Report={rows:Record<string,string|number>[];chart:{type:'bar';x:string;y:string;unit:string};report:string;period:{start:string;end:string};definition:string;total:number;query:string};
 export type HolidayItem={date:string;title:string};
@@ -169,3 +169,4 @@ export type PolicySummary={id:string;title:string;version:string;effective_date:
 export type PolicySection={id:string;section_id:string;heading:string;text:string;claim_key:string|null;claim_value:string|null};
 export type PolicyDetail={id:string;title:string;version:string;effective_date:string;expires_on:string|null;audience:string;sections:PolicySection[]};
 export type TeamMember={id:string;name:string;department:string;role:string;joined_on:string;exited_on:string|null;status:'Active'|'Exited'};
+export type HRSummary={employees:{total:number;active:number;exited:number};departments:{count:number;names:string[]};tickets:{total:number;open:number;resolved:number};leave_requests:Record<string,number>;source:string};

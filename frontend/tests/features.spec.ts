@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
 
+const todayInIndia = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit',
+}).format(new Date());
+const todayDay = Number(todayInIndia.slice(-2));
+const todayLabel = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Kolkata', month: 'long', day: 'numeric', year: 'numeric',
+}).format(new Date(`${todayInIndia}T00:00:00+05:30`));
+
 test.describe('AgentOS Comprehensive Feature Suite', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -12,14 +20,14 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
     // Default runtime month is October 2026
     await expect(page.locator('.calendar-heading')).toHaveText('October 2026', { timeout: 15000 });
 
-    // Verify today's date (Oct 11) is highlighted with is-today and today-indicator
+    // Verify the actual Asia/Kolkata date is highlighted.
     const todayCell = page.locator('.calendar-day-cell.is-today');
     await expect(todayCell).toBeVisible();
     await expect(todayCell.locator('.today-indicator')).toHaveText('Today');
-    await expect(todayCell.locator('.day-number')).toHaveText('11');
+    await expect(todayCell.locator('.day-number')).toHaveText(String(todayDay));
 
     // Default inspector shows today's date
-    await expect(page.locator('.inspector-title')).toContainText('October 11, 2026');
+    await expect(page.locator('.inspector-title')).toContainText(todayLabel);
 
     // Test Next Month navigation to November 2026
     await page.getByRole('button', { name: 'Next month' }).click();
@@ -40,7 +48,7 @@ test.describe('AgentOS Comprehensive Feature Suite', () => {
     // Click Today button to jump back to current month
     await page.getByRole('button', { name: 'Today' }).click();
     await expect(page.locator('.calendar-heading')).toHaveText('October 2026');
-    await expect(page.locator('.inspector-title')).toContainText('October 11, 2026');
+    await expect(page.locator('.inspector-title')).toContainText(todayLabel);
   });
 
   test('2. Policy Explorer search, document reading, and grounded AI prompts', async ({ page }) => {

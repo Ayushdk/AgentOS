@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend lint and tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: agentos
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d agentos"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ENVIRONMENT: test
+      AUTH_MODE: development
+      MODEL_MODE: development
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:5432/agentos
+      ANALYTICS_DATABASE_URL: postgresql+psycopg://agentos_report:report_ci@127.0.0.1:5432/agentos
+      SESSION_SECRET: ci-only-session-secret-at-least-32-characters
+      FRONTEND_ORIGIN: http://127.0.0.1:3000
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Ruff check
+        run: uv run ruff check backend scripts tests
+
+      - name: Prepare isolated CI database
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d agentos -c "CREATE ROLE agentos_report LOGIN PASSWORD 'report_ci';"
+          uv run alembic upgrade head
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d agentos -f scripts/provision.sql
+          uv run python -m agentos.seed
+          uv run python -m agentos.retrieval --without-embeddings
+
+      - name: Run backend regression suite
+        run: uv run pytest -q
+
+      - name: Scan tracked files for known secret formats
+        shell: bash
+        run: |
+          if git grep -nE 'AQ\.[A-Za-z0-9_-]{20,}|sb_secret_[A-Za-z0-9_-]{20,}' -- ':!*.lock'; then
+            echo "Potential production credential found in a tracked file" >&2
+            exit 1
+          fi
+
+  frontend-check:
+    name: Frontend Typecheck & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Next.js production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
+
+  browser-smoke:
+    name: Playwright isolated smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: agentos
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d agentos"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ENVIRONMENT: test
+      AUTH_MODE: development
+      MODEL_MODE: development
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:5432/agentos
+      ANALYTICS_DATABASE_URL: postgresql+psycopg://agentos_report:report_ci@127.0.0.1:5432/agentos
+      SESSION_SECRET: ci-only-session-secret-at-least-32-characters
+      FRONTEND_ORIGIN: http://127.0.0.1:3000
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Prepare isolated application
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d agentos -c "CREATE ROLE agentos_report LOGIN PASSWORD 'report_ci';"
+          uv run alembic upgrade head
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d agentos -f scripts/provision.sql
+          uv run python -m agentos.seed
+          uv run python -m agentos.retrieval --without-embeddings
+          npm ci --prefix frontend
+          cd frontend && npx playwright install --with-deps chromium
+      - name: Start local services and run browser suite
+        run: |
+          uv run uvicorn agentos.api:app --host 127.0.0.1 --port 8000 > /tmp/agentos-api.log 2>&1 &
+          npm run dev --prefix frontend > /tmp/agentos-web.log 2>&1 &
+          for i in {1..60}; do curl -fsS http://127.0.0.1:8000/health && break; sleep 1; done
+          for i in {1..60}; do curl -fsS http://127.0.0.1:3000/ && break; sleep 1; done
+          npm test --prefix frontend

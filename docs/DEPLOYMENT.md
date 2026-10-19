@@ -14,7 +14,13 @@ Create a Blueprint from `render.yaml`, add the two database URLs, `SUPABASE_URL`
 
 For live Gemini, first verify the project is free-tier with billing disabled. Then set `MODEL_MODE=live`, a model returned by the account's model-list endpoint, `GEMINI_API_KEY`, `GEMINI_MODEL`, and `GEMINI_FREE_TIER_VERIFIED=true`. The implementation applies per-run and daily persisted budgets. Free-tier prompts use synthetic data only.
 
-## Vercel
+## Verified Production Deployment
 
-Import `frontend/`, set `NEXT_PUBLIC_API_URL` to the Render HTTPS URL, and set the two public Supabase values. Update Render `FRONTEND_ORIGIN` to the final Vercel origin. Rebuild both services, then run the three Playwright journeys against the deployment.
+- **Frontend (Vercel)**: [`https://agent-os-sigma-vert.vercel.app`](https://agent-os-sigma-vert.vercel.app)
+- **Backend API (Render)**: [`https://agentos-api-2ima.onrender.com`](https://agentos-api-2ima.onrender.com)
+- **Health Endpoint**: [`https://agentos-api-2ima.onrender.com/health`](https://agentos-api-2ima.onrender.com/health)
+- **Database & Auth**: Hosted Supabase PostgreSQL/Auth with `pgvector` and asymmetric JWT verification. Connection details remain in provider secrets.
+- **Cold-start evidence**: One observed first request took 20.40 seconds; warm requests were fast. The frontend permits up to 75 seconds for shared readiness, including the tested 60-second simulation. This is not an SLA and does not prove every historical 503 was a cold start.
+
+The deployed gate confirmed provider success for `b1bd01e`, anonymous `/health`, exact-origin preflight, and 401 responses with CORS headers. It did not complete an authenticated post-deployment browser journey because no explicitly authorized signed-in session was available.
 

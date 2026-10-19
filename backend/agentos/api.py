@@ -436,6 +436,40 @@ async def analytics(body: ReportBody, ctx: Identity = Depends(identity)):
     return await app.state.gateway.call(ctx, "query_hr_analytics", body.model_dump(), specialist="analytics")
 
 
+def ticket_json(ticket):
+    return {
+        "id": ticket.id,
+        "employee_id": ticket.employee_id,
+        "question": ticket.question,
+        "reason": ticket.reason,
+        "status": ticket.status,
+        "evidence": ticket.evidence,
+        "checks": ticket.checks,
+        "created_at": ticket.created_at.isoformat(),
+    }
+
+
+@app.get("/tickets/mine")
+def my_tickets(ctx: Identity = Depends(identity)):
+    with transaction() as s:
+        rows = s.scalars(
+            scope(ctx, Ticket).order_by(Ticket.created_at.desc()).limit(100)
+        )
+        return [ticket_json(ticket) for ticket in rows]
+
+
+@app.get("/tickets/{ticket_id}")
+def ticket_detail(ticket_id: UUID, ctx: Identity = Depends(identity)):
+    with transaction() as s:
+        query = select(Ticket).where(Ticket.id == str(ticket_id), Ticket.tenant_id == ctx.tenant_id)
+        if ctx.role != "hr":
+            query = query.where(Ticket.employee_id == ctx.employee_id)
+        ticket = s.scalar(query)
+        if not ticket:
+            raise DomainError("not_found", "Ticket not found.", 404)
+        return ticket_json(ticket)
+
+
 @app.get("/tickets")
 def tickets(ctx: Identity = Depends(identity)):
     require_role(ctx, "hr")
@@ -446,19 +480,34 @@ def tickets(ctx: Identity = Depends(identity)):
             .order_by(Ticket.created_at.desc())
             .limit(100)
         )
-        return [
-            {
-                "id": t.id,
-                "employee_id": t.employee_id,
-                "question": t.question,
-                "reason": t.reason,
-                "status": t.status,
-                "evidence": t.evidence,
-                "checks": t.checks,
-                "created_at": t.created_at.isoformat(),
-            }
-            for t in rows
-        ]
+        return [ticket_json(ticket) for ticket in rows]
+
+
+@app.get("/hr/summary")
+def hr_summary(ctx: Identity = Depends(identity)):
+    require_role(ctx, "hr")
+    with transaction() as s:
+        employees = s.scalars(select(Employee).where(Employee.tenant_id == ctx.tenant_id)).all()
+        ticket_rows = s.scalars(select(Ticket).where(Ticket.tenant_id == ctx.tenant_id)).all()
+        leave_rows = s.scalars(select(Leave).where(Leave.tenant_id == ctx.tenant_id)).all()
+    active = sum(employee.exited_on is None for employee in employees)
+    exited = len(employees) - active
+    departments = sorted({employee.department for employee in employees})
+    leave_statuses = {
+        status: sum(leave.status == status for leave in leave_rows)
+        for status in ("draft", "pending", "approved", "rejected", "cancelled")
+    }
+    return {
+        "employees": {"total": len(employees), "active": active, "exited": exited},
+        "departments": {"count": len(departments), "names": departments},
+        "tickets": {
+            "total": len(ticket_rows),
+            "open": sum(ticket.status == "open" for ticket in ticket_rows),
+            "resolved": sum(ticket.status == "resolved" for ticket in ticket_rows),
+        },
+        "leave_requests": leave_statuses,
+        "source": "tenant-scoped operational records",
+    }
 
 
 @app.post("/tickets/{ticket_id}/resolve")
@@ -485,8 +534,8 @@ def get_calendar(ctx: Identity = Depends(identity)):
             for h in s.scalars(select(Holiday).order_by(Holiday.day))
         ]
         my_leaves = [
-            pack_leave(l)
-            for l in s.scalars(
+            pack_leave(leave_item)
+            for leave_item in s.scalars(
                 scope(ctx, Leave).order_by(Leave.start_date.desc())
             )
         ]
@@ -556,7 +605,7 @@ def list_policies(ctx: Identity = Depends(identity)):
     as_of = now().date()
     with transaction() as s:
         docs = s.scalars(
-            select(PolicyDocument).where(PolicyDocument.fixture == False).order_by(PolicyDocument.id)
+            select(PolicyDocument).where(PolicyDocument.fixture.is_(False)).order_by(PolicyDocument.id)
         ).all()
         result = []
         for d in docs:
