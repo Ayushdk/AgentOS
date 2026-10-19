@@ -9,7 +9,7 @@ from .config import settings
 from .db import transaction
 from .errors import DomainError
 from .models import AuthIdentity, Tenant
-from .seed import DEMO_IDS, seed_tenant
+from .seed import DEMO_IDS, LEGACY_DEMO_TENANT_ID, seed_tenant
 
 
 def select_demo_persona(token, persona):
@@ -45,7 +45,9 @@ def select_demo_persona(token, persona):
                 )
         elif mapping:
             tenant = s.get(Tenant, mapping.tenant_id)
-            if not tenant or tenant.kind not in {"demo", "local"}:
+            if not tenant or (
+                tenant.id != LEGACY_DEMO_TENANT_ID and tenant.kind not in {"demo", "local"}
+            ):
                 raise DomainError(
                     "forbidden",
                     "Identity switching is available only in the synthetic demo workspace.",

@@ -10,6 +10,7 @@ from .config import settings
 from .db import transaction
 from .errors import DomainError
 from .models import AuthIdentity, Employee, Tenant, now
+from .seed import LEGACY_DEMO_TENANT_ID
 
 
 class Identity(BaseModel):
@@ -31,7 +32,8 @@ def resolve_identity(tenant: str, employee: str) -> Identity:
             employee_id=employee,
             role=row.role,
             name=row.name,
-            demo=s.get(Tenant, tenant).kind in {"demo", "hosted_demo", "local"},
+            demo=tenant == LEGACY_DEMO_TENANT_ID
+            or s.get(Tenant, tenant).kind in {"demo", "hosted_demo", "local"},
         )
 
 

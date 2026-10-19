@@ -10,6 +10,7 @@ DEPARTMENTS = ["Engineering", "Product", "Operations", "Finance", "People"]
 FIRST = ["Ari", "Mira", "Dev", "Leena", "Rohan", "Nila", "Kiran", "Isha", "Samar", "Tara"]
 LAST = ["Sen", "Rao", "Mehta", "Das", "Shah"]
 DEMO_IDS = {"employee": "E001", "manager": "E010", "hr": "E050"}
+LEGACY_DEMO_TENANT_ID = "00000000-0000-0000-0000-000000000001"
 
 
 def seed_tenant(tenant_id=None, kind="demo"):

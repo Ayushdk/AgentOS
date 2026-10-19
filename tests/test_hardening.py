@@ -14,7 +14,7 @@ from agentos.model import development_plan
 from agentos.models import AuthIdentity, Leave, Ticket, now, uid
 from agentos.public_demo import select_demo_persona
 from agentos.retrieval import search_policies
-from agentos.seed import seed_tenant
+from agentos.seed import LEGACY_DEMO_TENANT_ID, seed_tenant
 from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi.testclient import TestClient
 
@@ -270,6 +270,29 @@ def test_legacy_local_synthetic_account_can_switch_persona(monkeypatch):
     hr = select_demo_persona("verified-test-token", "hr")
     assert hr.role == "hr"
     assert hr.demo is True
+
+
+def test_fixed_seeded_demo_tenant_can_switch_even_with_legacy_kind(monkeypatch):
+    cfg = settings()
+    monkeypatch.setattr(cfg, "auth_mode", "supabase")
+    subject = uid()
+    seed_tenant(LEGACY_DEMO_TENANT_ID, kind="production")
+    with transaction() as s:
+        s.add(
+            AuthIdentity(
+                subject=subject,
+                tenant_id=LEGACY_DEMO_TENANT_ID,
+                employee_id="E001",
+            )
+        )
+    monkeypatch.setattr(
+        "agentos.public_demo.supabase_claims",
+        lambda _: {"sub": subject, "is_anonymous": False},
+    )
+
+    manager = select_demo_persona("verified-test-token", "manager")
+    assert manager.role == "manager"
+    assert manager.demo is True
 
 
 def test_provisioned_non_demo_account_cannot_switch_persona(monkeypatch):
