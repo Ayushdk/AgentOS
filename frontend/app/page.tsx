@@ -694,7 +694,7 @@ export default function Page() {
             onResolveTicket={async (id) => {
               setBusy(true);
               try {
-                await api("/tickets/" + id + "/resolve");
+                await api("/tickets/" + id + "/resolve", {});
                 setTickets(await api("/tickets"));
                 setNotice("Ticket resolved.");
               } catch (e) {

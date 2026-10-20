@@ -577,3 +577,24 @@ def test_employee_ticket_reads_are_owner_scoped_and_hr_summary_is_derived():
             "/hr/summary", cookies={"agentos_session": auth.sign(employee)}
         ).status_code == 403
 
+        employee_resolve = client.post(
+            f"/tickets/{ticket_id}/resolve",
+            json={},
+            headers={"X-AgentOS-Request": "1"},
+            cookies={"agentos_session": auth.sign(employee)},
+        )
+        assert employee_resolve.status_code == 403
+
+        resolved = client.post(
+            f"/tickets/{ticket_id}/resolve",
+            json={},
+            headers={"X-AgentOS-Request": "1"},
+            cookies={"agentos_session": auth.sign(hr)},
+        )
+        assert resolved.status_code == 200
+        assert resolved.json() == {"id": ticket_id, "status": "resolved"}
+
+        refreshed = client.get("/tickets", cookies={"agentos_session": auth.sign(hr)})
+        assert refreshed.status_code == 200
+        assert next(row for row in refreshed.json() if row["id"] == ticket_id)["status"] == "resolved"
+
