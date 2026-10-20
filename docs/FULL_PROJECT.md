@@ -7,9 +7,9 @@
 
 ---
 
-> **Source baseline:** deployed commit [`b1bd01e`](https://github.com/Ayushdk/AgentOS/commit/b1bd01e22979b4175224dcbca8a6930298592ad1); current local additions are explicitly labeled.
+> **Source baseline:** implementation audited at commit [`670ed7e`](https://github.com/Ayushdk/AgentOS/commit/670ed7e62995f3346b9e16e1bcf50e80c41fcc17); documentation refresh prepared October 20, 2026.
 > **Live:** [Frontend](https://agent-os-sigma-vert.vercel.app) · [Backend health](https://agentos-api-2ima.onrender.com/health) · [Repository](https://github.com/Ayushdk/AgentOS)
-> **Evidence boundary:** all people and records are synthetic. Anonymous production probes passed; no authenticated post-`b1bd01e` production Manager journey is claimed.
+> **Evidence boundary:** all people and records are synthetic. The provisioned synthetic account and all three server-mapped personas have been verified; no business record was changed during that production check.
 
 ## TABLE OF CONTENTS
 - [Part A — Project Understanding](#part-a--project-understanding)
@@ -286,7 +286,7 @@ flowchart TB
   B -. optional .-> G[Gemini]
   P[(Operational systems)] -. no shared route or credential .- D
 ```
-This is an approved target, not completed cloud infrastructure. `public_demo.py` already restricts persona selection to verified anonymous subjects and per-visitor tenants. Creating the separate project, enabling anonymous Auth, and wiring providers require approval.
+The deployed provisioned portfolio account uses a fixed synthetic tenant and three bounded server-owned personas. Optional anonymous visitor isolation remains a separate target that requires a dedicated project, anonymous Auth, and approved provider configuration.
 
 #### Cold-start recovery
 ```mermaid
@@ -338,7 +338,7 @@ Built with **FastAPI**, running asynchronously on **Uvicorn**:
 | **FastMCP / Model Context Protocol** | Tool Server & Boundary (`backend/agentos/mcp_server.py`) | Standardized Anthropic/Linux Foundation protocol for tool isolation and dynamic discovery over stdio. | Decouples tool execution from the web process; enforces per-tool signed cryptographic authorization tokens. | Alternative: In-process Python functions (vulnerable to prompt injection escaping execution boundaries). |
 | **SQLAlchemy 2.0 & Alembic** | ORM, Query Building, Migrations (`backend/agentos/models.py`) | Declarative typing (`Mapped`), strict connection pooling, robust migration history. | Enforces relational constraints (unique keys, check constraints on leave balances, foreign keys). | Alternative: SQLModel, Tortoise ORM. |
 | **PostgreSQL & pgvector** | Primary Datastore & Vector Index (`localhost:55432`) | ACID transactions, native full-text search (`tsvector`), cosine distance vector queries (`<=>`). | Single datastore for relational entities, operational checkpoints, and hybrid policy document chunks. | Alternative: Pinecone/Qdrant + Postgres (adds distributed state sync failure modes). |
-| **Supabase Authentication** | Production Identity Provider (`frontend/components/auth/`) | Secure JWT issuance, standard OAuth/email authentication, external identity mapping. | Eliminates the security risk of custom password hashing and session management. | Alternative: Auth0, Clerk, NextAuth. |
+| **Supabase Authentication** | Production Identity Provider (`frontend/lib/supabase.ts`, `frontend/components/views/login-view.tsx`) | Secure JWT issuance, standard OAuth/email authentication, external identity mapping. | Eliminates the security risk of custom password hashing and session management. | Alternative: Auth0, Clerk, NextAuth. |
 | **SQLGlot** | SQL Validation & Transpilation (`backend/agentos/analytics.py`) | Concrete AST parsing and validation of dynamic analytics queries. | Completely prevents SQL injection by disallowing CTEs, subqueries, joins, locks, mutations, and non-whitelisted functions. | Alternative: Regular expression sanitization (notoriously vulnerable to bypass). |
 | **FastEmbed (`all-MiniLM-L6-v2`)** | Embedding Generation (`backend/agentos/retrieval.py`) | Fast ONNX-based local embedding execution on CPU without requiring heavy PyTorch runtimes. | Produces 384-dimensional dense vectors for semantic policy search; no fixed latency is claimed. | Alternative: OpenAI `text-embedding-3-small` (adds network latency and API costs). |
 
@@ -348,73 +348,25 @@ Built with **FastAPI**, running asynchronously on **Uvicorn**:
 
 ```text
 ANGELONE_AGENT/
-├── FULL_PROJECT.md                       # Comprehensive Technical Handbook & Architecture Manual
-├── README.md                             # Quickstart and project summary
-├── render.yaml                           # Render backend deployment descriptor
-├── pyproject.toml                        # Python dependencies and packaging
-├── alembic.ini                           # Alembic database migration configuration
-├── backend/
-│   └── agentos/
-│       ├── __init__.py                   # Package initialization
-│       ├── analytics.py                  # Strict SQLGlot validator and reporting queries
-│       ├── api.py                        # FastAPI endpoints, RBAC dependencies, calendar & policies routes
-│       ├── auth.py                       # JWT verification, identity mapping, token signing
-│       ├── checkpoints.py                # PostgreSQL LangGraph checkpointer implementation
-│       ├── config.py                     # Pydantic Settings (environment variables, paths, modes)
-│       ├── db.py                         # SQLAlchemy engine and transaction context manager
-│       ├── errors.py                     # DomainError exception classes and HTTP error codes
-│       ├── graph.py                      # LangGraph StateGraph, specialist nodes, human-in-the-loop
-│       ├── maintenance.py                # Audit log pruning and retention maintenance tasks
-│       ├── mcp_client.py                 # Async stdio MCP client communicating with FastMCP server
-│       ├── mcp_server.py                 # Private FastMCP server registering 9 domain tools
-│       ├── model.py                      # Gemini SDK adapter, token counting, deterministic fallback
-│       ├── models.py                     # SQLAlchemy models (Employee, Leave, Approval, Policy, etc.)
-│       ├── retrieval.py                  # Policy chunking, FastEmbed embeddings, hybrid FTS search
-│       ├── routing.py                    # Intent classification and entity extraction regex/parsers
-│       ├── seed.py                       # Database seed script (employees, balances, policies, events)
-│       └── services.py                   # Domain business logic (leave checks, calendar math, tickets)
-├── frontend/
-│   ├── app/
-│   │   ├── globals.css                   # Enterprise design system tokens, typography, layouts
-│   │   ├── layout.tsx                    # Root layout with fonts and metadata
-│   │   └── page.tsx                      # Primary application shell, navigation router, view switch
-│   ├── components/
-│   │   ├── auth/
-│   │   │   ├── auth-panel.tsx            # Dual Supabase login and development persona switcher
-│   │   │   └── role-badge.tsx            # Visual identity and role chips
-│   │   ├── calendar/
-│   │   │   └── calendar-view.tsx         # Monthly interactive calendar, holiday badges, event inspector
-│   │   ├── dashboard/
-│   │   ├── views/                        # Current role-specific screens
-│   │   │   ├── employee-home-view.tsx    # Employee overview and recent activity
-│   │   │   ├── manager-home-view.tsx     # Manager approval and team overview
-│   │   │   ├── hr-dashboard-view.tsx     # HR overview backed by derived summary data
-│   │   │   └── company-policies-view.tsx # Document browser and policy questions
-│   │   ├── layout/
-│   │   │   └── app-shell.tsx             # Shared role-aware navigation and page frame
-│   │   ├── team/
-│   │   │   └── team-directory.tsx        # Manager direct reports roster, search, status indicators
-│   │   └── ui/
-│   │       ├── button.tsx                # Reusable enterprise button component
-│   │       ├── card.tsx                  # Standard container card with borders and padding
-│   │       ├── input.tsx                 # Form inputs and textareas
-│   │       └── modal.tsx                 # Confirmation modals for approvals and handoffs
-│   ├── lib/
-│   │   ├── api.ts                        # Typed REST client with auto-injected auth headers
-│   │   ├── supabase.ts                   # Supabase browser client initialization
-│   │   └── utils.ts                      # Date formatting and helper utilities
-│   ├── scripts/
-│   │   ├── audit_journeys.mjs            # End-to-end multi-role functional journey verification
-│   │   └── capture.mjs                   # Automated screenshot capture suite
-│   ├── tests/
-│   │   ├── features.spec.ts              # Playwright tests for Calendar, Policies, Team, RBAC
-│   │   └── journeys.spec.ts              # Playwright tests for Core 3-Role Workflows
-│   └── package.json                      # Frontend dependencies, scripts, and build tasks
-├── migrations/
-│   └── versions/                         # Alembic migration scripts (DDL, pgvector, schemas)
-├── policies/                             # Seeded markdown policy documents (leave, remote, conduct)
-├── tests/                                # Backend pytest test suite (80 passed unit/integration tests)
-└── artifacts/                            # Verification artifacts, test recordings, screenshots
+??? README.md                         # Project overview and local commands
+??? pyproject.toml                    # Python dependencies and tool settings
+??? render.yaml                       # Render service definition
+??? backend/agentos/                  # API, auth, services, agents, MCP, retrieval
+??? frontend/app/                     # Next.js entry point and global styles
+??? frontend/components/
+?   ??? layout/                       # Role-aware shell and navigation
+?   ??? views/                        # Employee, Manager, HR, auth, and policy screens
+?   ??? calendar/                     # Shared calendar implementation
+?   ??? team/                         # Manager team directory
+?   ??? ui/                           # Button and dialog primitives
+??? frontend/lib/                     # API client, dates, Supabase, utilities
+??? frontend/tests/                   # Playwright journeys and resilience tests
+??? migrations/versions/              # Alembic schema history
+??? policies/                         # Synthetic Markdown policies and fixtures
+??? scripts/                          # Setup, smoke, database, and diagnostic tools
+??? tests/                            # Backend regression and evaluation suites
+??? artifacts/                        # Tracked verification evidence
+??? docs/                             # Current technical and product guides
 ```
 
 ---
@@ -433,21 +385,25 @@ Hosted sign-in used a fresh unauthenticated context. Other screens came from cur
 |---|---|
 | ![Calendar](images/03-calendar.png) | ![Policy Explorer](images/04-policy-explorer.png) |
 
-| Assistant | Leave confirmation |
+| Assistant | Leave request |
 |---|---|
-| ![AI assistant](images/05-ai-assistant.png) | ![Leave workflow](images/06-leave-confirmation.png) |
+| ![AI assistant](images/05-ai-assistant.png) | ![Leave workflow](images/06-leave-request.png) |
 
 | Manager overview | Approval inbox |
 |---|---|
-| ![Manager dashboard](images/07-manager-dashboard.png) | ![Approval inbox](images/08-manager-approval-inbox.png) |
+| ![Manager dashboard](images/08-manager-dashboard.png) | ![Approval inbox](images/09-manager-approval-inbox.png) |
 
 | HR overview | Connection state |
 |---|---|
-| ![HR dashboard](images/09-hr-dashboard.png) | ![Connecting](images/10-connecting-to-agentos.png) |
+| ![HR dashboard](images/10-hr-dashboard.png) | ![Connecting](images/13-connecting-to-agentos.png) |
 
 | Employee tickets | Workforce analytics |
 |---|---|
-| ![Employee tickets](images/11-my-tickets.png) | ![Workforce analytics](images/12-workforce-analytics.png) |
+| ![Employee tickets](images/07-my-tickets.png) | ![Workforce analytics](images/11-workforce-analytics.png) |
+
+| HR ticket queue |
+|---|
+| ![HR ticket queue](images/12-hr-tickets.png) |
 
 
 ### 1. Design Philosophy: Restrained Enterprise Polish
@@ -511,7 +467,7 @@ FastAPI resolves every protected request to `Identity(tenant_id, employee_id, ro
 | POST | `/auth/demo` | Local development only | Creates a signed local persona cookie |
 | GET | `/auth/me` | Authenticated | Returns authoritative mapped identity |
 | POST | `/auth/logout` | Any | Deletes the local session cookie |
-| POST | `/auth/demo/persona` | Verified anonymous demo subject | Maps one of three fixed personas in the caller's isolated demo tenant |
+| POST | `/auth/demo/persona` | Verified demo subject | Maps one of three fixed personas only inside an approved synthetic demo tenant |
 | POST | `/chat` | Authenticated | Creates an idempotent AgentRun and drives LangGraph |
 | GET | `/runs` | Authenticated | Returns the caller's latest 30 scoped runs |
 | GET | `/runs/{run_id}` | Run owner | Returns one run |
@@ -960,14 +916,14 @@ Endpoint-level guards use FastAPI's dependency injection (`Depends(require_role(
 
 ## PART L — TESTING, EVALUATION & QA AUTOMATION
 
-> **Audited counts:** the deployed gate recorded 81 passing Pytest cases and 22 passing Playwright tests. Current local work adds three backend cases, for 84 passing tests. Deterministic evaluation proves workflow contracts, not live-model quality.
+> **Current validation:** 88 Pytest cases and 23 Playwright tests pass locally, together with Ruff, TypeScript, and the production build. Deterministic evaluation proves workflow contracts, not live-model quality.
 
 
 ### 1. Automated Test Suites & Observed Results
 
 | Suite | Scope / Coverage | Test Count | Status | Execution Command |
 |---|---|:---:|:---:|---|
-| **Backend Unit & Hardening Suite** | Full backend test suite covering DB models, services, RBAC, leave limits, idempotency, and handoffs. | **80 passed** | PASS | `uv run pytest tests` |
+| **Backend Unit & Hardening Suite** | Full backend test suite covering DB models, services, RBAC, leave limits, idempotency, and handoffs. | **88 passed** | PASS | `uv run pytest tests` |
 | **Playwright Core Journeys** | Multi-role user journeys: leave submission, manager approval, HR analytics, ticket resolution. | **3 passed** | PASS | `npx playwright test tests/journeys.spec.ts` |
 | **Playwright Feature Verification** | Interactive Calendar navigation, Policy Explorer search & citations, Manager Team directory, RBAC guards. | **5 passed** | PASS | `npx playwright test tests/features.spec.ts` |
 | **Automated Journey Audit** | 7-stage end-to-end programmatic browser verification script. | **7 passed** | PASS | `node scripts/audit_journeys.mjs` |
@@ -994,7 +950,7 @@ Automated screenshot artifacts generated during end-to-end test execution:
 | `DATABASE_URL` | Backend | PostgreSQL connection string for operational data. | Yes |
 | `ANALYTICS_DATABASE_URL` | Backend | PostgreSQL connection string for read-only reporting role. | Yes |
 | `SUPABASE_URL` | All | Supabase project API gateway URL. | No |
-| `SUPABASE_ANON_KEY` | Frontend | Supabase client anonymous public key. | No |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Frontend | Supabase client anonymous public key. | No |
 | `SUPABASE_JWT_SECRET` | Backend | Secret used to verify Supabase JWT signatures. | Yes |
 | `MODEL_MODE` | Backend | LLM execution mode (`deterministic` or `live`). | No |
 | `GEMINI_MODEL` | Backend | Model identifier (e.g., `gemini-1.5-flash`). | No |
@@ -1173,7 +1129,7 @@ Automated screenshot artifacts generated during end-to-end test execution:
 
 35. **Q: What is the difference between the deterministic test mode and live model mode?**
     *30-second summary:* Deterministic mode uses fixed templates for instant, zero-cost automated testing; live mode calls Gemini for grounded natural language synthesis.
-    *Deep explanation:* Setting `MODEL_MODE=deterministic` allows the test suite (81 backend tests and 22 Playwright tests at the deployed gate) to run in seconds with 100% reproducibility and zero API costs. Setting `MODEL_MODE=live` connects to an explicitly configured Gemini model for optional bounded synthesis while preserving identical tool calling and validation logic.
+    *Deep explanation:* Setting `MODEL_MODE=development` keeps routing and fallback behavior deterministic and avoids provider cost. The current local validation covers 88 backend cases and 23 browser cases. Setting `MODEL_MODE=live` connects to an explicitly configured Gemini model for optional bounded synthesis while preserving the same tool and validation boundaries.
 
 ### Advanced Edge Cases & System Tradeoffs
 36. **Q: What happens if an employee submits a leave request spanning a public holiday?**
@@ -1245,7 +1201,7 @@ Automated screenshot artifacts generated during end-to-end test execution:
 53. **Q: Why retry GET but not POST?** Reads are idempotent; a timed-out write may already have committed.
 54. **Q: How is stale data represented?** Prior state is retained and explicitly labeled potentially out of date; failure never becomes an empty success state.
 55. **Q: What is real AI versus deterministic behavior?** Gemini synthesis is optional; permissions, calculations, SQL, state transitions, and development routing are deterministic.
-56. **Q: How is public demo switching secured?** Only a verified anonymous Supabase subject may choose three fixed personas mapped server-side into a per-visitor tenant.
+56. **Q: How is public demo switching secured?** A verified Supabase subject may choose only three fixed personas when its mapping belongs to the fixed seeded demo tenant; optional anonymous subjects receive isolated hosted-demo tenants when that mode is enabled.
 57. **Q: How is rich synthetic data repeatable?** Fixed seed, UUIDv5 IDs, idempotent inserts, and validation produce stable records.
 58. **Q: Why restrict demo reset?** It requires an explicit flag, local/test mode, loopback host, explicit tenant, and `local_demo` kind.
 59. **Q: What are free-tier limits?** Render may cold start, Gemini quota may be unavailable, and small plans have finite concurrency; retry is not an SLA.

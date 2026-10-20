@@ -1,14 +1,9 @@
-# AgentOS v1 product brief
+﻿# AgentOS product brief
 
-AgentOS is an independent portfolio demonstration for the fictional fintech company Meridian Ledger. Every employee, policy, calendar event, approval, and report is synthetic.
+AgentOS is a role-based employee-operations workspace for the fictional company Meridian Ledger. Every identity, policy, leave request, ticket, calendar event, and report row is synthetic.
 
-The three review journeys are:
+Employees inspect policy citations, review balances and leave history, prepare and confirm leave, view calendars, and track support tickets. Managers receive an approval inbox, availability view, direct-report directory, team calendar, and coverage indicators. HR analysts review tickets, inspect aggregate metrics, run approved reports, and view execution evidence.
 
-1. An employee asks a policy question and opens a server-verified source section.
-2. An employee prepares leave, sees working-day and calendar facts, confirms the exact draft, and waits for a separate direct-manager decision.
-3. An HR analyst views an aggregate report or receives an employee-confirmed handoff when policy evidence is missing or contradictory.
+The assistant is bounded by backend rules. Policy answers use eligible sources; workflow writes require confirmation; Manager review is separate; analytics uses approved reporting views. Optional Gemini inference improves grounded wording but does not own authorization or business state.
 
-Version 1 includes five policies, leave/calendar workflow, aggregate HR analytics, human handoff, private stdio MCP integration, PostgreSQL checkpoints, and factual execution events. Calendar and HR systems are simulated. Gemini is optional; deterministic development mode remains fully runnable without a model key.
-
-Finish criteria: no browser-supplied identity grants access; write actions require persisted approvals; retries do not duplicate writes; policy claims resolve to real sections; aggregate charts match returned rows; workflows resume after process restart; and demo/live/replay modes are visibly labeled.
-
+The live portfolio uses Vercel, Render Free, and Supabase. Render may require a cold start, so the frontend shows a connection state and retries safe reads within a fixed budget.

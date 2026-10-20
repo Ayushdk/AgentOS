@@ -1,10 +1,7 @@
-# Evaluation report
+﻿# Evaluation guide
 
-The frozen final dataset contains 60 cases: 15 policy/citation, 15 workflow, 10 analytics, 10 permission/injection, and 10 recovery/retry cases. Development questions are stored separately.
+The frozen deterministic dataset contains 60 cases covering policy/citation, workflow, analytics, permission/injection, and recovery behavior. Development-mode runs exercise the same authorization, MCP, retrieval, SQL, and state-transition boundaries without depending on external model availability.
 
-On October 9, 2026, all 60 deterministic scenarios passed once against PostgreSQL and the real stdio MCP client/server. The run observed zero unauthorized accesses/actions and zero duplicate submissions. Median warm scenario latency was 40.39 ms; p95 was 2246.07 ms. The first policy case, marked as the cold embedding start, took 802.18 ms. A later expanded suite passed 72 tests, and three Playwright journeys passed.
+`evaluation/development.json` and `evaluation/final.json` contain the cases. `tests/test_evaluation.py` executes the contracts. `artifacts/evaluation-results.json` is tracked evidence from a recorded run and should not be treated as a live production benchmark.
 
-These figures are test-suite results for deterministic services and injected recovery faults. They are not 60 live Gemini trials and do not establish production security. Citation support is checked by exact containment in retrieved source sections; it has not received independent human review. A separate two-turn `gemini-3.8-flash` smoke test verified live planning, grounded response synthesis, and contextual follow-up handling using the user-confirmed Free tier; see `artifacts/live-smoke.json`. Render memory and cold-start behavior remain unverified because no Render account session is available.
-
-Machine-readable evidence is in `artifacts/evaluation-results.json`, `artifacts/hosted-integration.json`, `artifacts/restart-proof.json`, `artifacts/topology-comparison.json`, `artifacts/backend-memory.json`, and `artifacts/browser-results.json`.
-
+Optional Gemini smoke evidence demonstrates connectivity and bounded grounded wording only. It does not replace deterministic regression coverage or establish production model quality.

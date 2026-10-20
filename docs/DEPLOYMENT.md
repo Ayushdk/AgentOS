@@ -1,26 +1,34 @@
-# Deployment checklist
+﻿# Deployment guide
 
-The repository is configured for a Vercel Hobby frontend, one Render Free backend worker, and Supabase Free PostgreSQL/Auth. Confirm current free-tier eligibility in each account before deployment; do not attach billing to complete this demo.
+## Current services
+
+- Frontend: [agent-os-sigma-vert.vercel.app](https://agent-os-sigma-vert.vercel.app)
+- Backend: [agentos-api-2ima.onrender.com](https://agentos-api-2ima.onrender.com)
+- Health: [agentos-api-2ima.onrender.com/health](https://agentos-api-2ima.onrender.com/health)
+- Repository: [github.com/Ayushdk/AgentOS](https://github.com/Ayushdk/AgentOS)
+
+The project uses a Vercel frontend, one Render Free API worker, and Supabase PostgreSQL/Auth. Secrets remain in provider configuration.
 
 ## Supabase
 
-The approved setup was run against the supplied empty project. It enabled pgvector, created AgentOS tables plus `reporting` and `checkpoints` schemas, and created narrowly scoped runtime/report roles. Keep `.env.hosted` local. Copy its `DATABASE_URL` and `ANALYTICS_DATABASE_URL` values into Render secrets. Do not use the setup/admin URL at runtime.
+Hosted users authenticate with provisioned email/password accounts. JWT subjects map through `auth_identities` to server-owned employees and roles. The seeded portfolio account may switch only among Employee `E001`, Manager `E010`, and HR `E050` in the fixed synthetic tenant.
 
-Supabase anonymous sign-in was found disabled on October 10, 2026. Either enable anonymous sign-ins for isolated visitor workspaces or create synthetic email/password users and insert their Auth UUID mappings into `auth_identities`. Set `ENABLE_PUBLIC_DEMO=true` only after anonymous sign-in is enabled. CAPTCHA and rate limits are recommended for a public anonymous demo.
+Anonymous sign-in is not required for that provisioned account. Optional anonymous visitor isolation still requires a dedicated synthetic Supabase project and `ENABLE_PUBLIC_DEMO=true`.
+
+Use scoped runtime and reporting database roles. Never deploy the setup/admin URL as the runtime connection.
 
 ## Render
 
-Create a Blueprint from `render.yaml`, add the two database URLs, `SUPABASE_URL`, and the final HTTPS `FRONTEND_ORIGIN`. Keep one worker. The local measured backend plus MCP RSS was about 391 MiB after tool calls; this does not establish Linux/Render compatibility. Run `scripts/process_memory.py` and a leave/retrieval smoke test on the deployed instance before claiming free-host compatibility.
+`render.yaml` starts one worker with `uv run uvicorn agentos.api:app --host 0.0.0.0 --port $PORT --workers 1`. Configure the database URLs, Supabase URL, strong session secret, and exact Vercel origin. CORS must remain exact-origin.
 
-For live Gemini, first verify the project is free-tier with billing disabled. Then set `MODEL_MODE=live`, a model returned by the account's model-list endpoint, `GEMINI_API_KEY`, `GEMINI_MODEL`, and `GEMINI_FREE_TIER_VERIFIED=true`. The implementation applies per-run and daily persisted budgets. Free-tier prompts use synthetic data only.
+Deterministic model mode is the safe default. Gemini requires an explicitly verified free-tier model, key, and quota attestation.
 
-## Verified Production Deployment
+## Vercel
 
-- **Frontend (Vercel)**: [`https://agent-os-sigma-vert.vercel.app`](https://agent-os-sigma-vert.vercel.app)
-- **Backend API (Render)**: [`https://agentos-api-2ima.onrender.com`](https://agentos-api-2ima.onrender.com)
-- **Health Endpoint**: [`https://agentos-api-2ima.onrender.com/health`](https://agentos-api-2ima.onrender.com/health)
-- **Database & Auth**: Hosted Supabase PostgreSQL/Auth with `pgvector` and asymmetric JWT verification. Connection details remain in provider secrets.
-- **Cold-start evidence**: One observed first request took 20.40 seconds; warm requests were fast. The frontend permits up to 75 seconds for shared readiness, including the tested 60-second simulation. This is not an SLA and does not prove every historical 503 was a cold start.
+Configure `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and the Supabase publishable key. Never expose database credentials, the session secret, or a service-role key.
 
-The deployed gate confirmed provider success for `b1bd01e`, anonymous `/health`, exact-origin preflight, and 401 responses with CORS headers. It did not complete an authenticated post-deployment browser journey because no explicitly authorized signed-in session was available.
+## Verification
 
+After deployment, verify frontend and health 200 responses, exact-origin preflight, protected-route 401 behavior, `/auth/me`, all three fixed demo personas, read-only role dashboards, cold-start recovery, and deployed commit alignment.
+
+Production persona switching was verified after the current implementation and the test account was restored to Employee. No leave request, approval, rejection, or ticket was changed during that verification.

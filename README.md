@@ -7,7 +7,8 @@ AgentOS is an independent portfolio application for the fictional company **Meri
 - **Frontend:** [agent-os-sigma-vert.vercel.app](https://agent-os-sigma-vert.vercel.app)
 - **API health:** [agentos-api-2ima.onrender.com/health](https://agentos-api-2ima.onrender.com/health)
 - **Technical handbook:** [docs/FULL_PROJECT.md](docs/FULL_PROJECT.md)
-- **Project guide:** [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md)
+- **Codebase guide:** [docs/CODEBASE_GUIDE.md](docs/CODEBASE_GUIDE.md)
+- **Developer quickstart:** [docs/DEVELOPER_QUICKSTART.md](docs/DEVELOPER_QUICKSTART.md)
 - **Current limitations:** [docs/LIMITATIONS.md](docs/LIMITATIONS.md)
 
 > The Render free service can take tens of seconds to wake. The frontend performs one shared readiness check, shows a connection state, and retries only safe GET requests within fixed budgets. The recorded replay remains available when live services are unavailable.
@@ -29,15 +30,15 @@ AgentOS is an independent portfolio application for the fictional company **Meri
 
 | Employee workspace | Manager workspace |
 |---|---|
-| ![Employee dashboard](docs/images/02-employee-dashboard.png) | ![Manager dashboard](docs/images/07-manager-dashboard.png) |
+| ![Employee dashboard](docs/images/02-employee-dashboard.png) | ![Manager dashboard](docs/images/08-manager-dashboard.png) |
 
 | Policy Explorer | HR workspace |
 |---|---|
-| ![Policy Explorer](docs/images/04-policy-explorer.png) | ![HR dashboard](docs/images/09-hr-dashboard.png) |
+| ![Policy Explorer](docs/images/04-policy-explorer.png) | ![HR dashboard](docs/images/10-hr-dashboard.png) |
 
 | Employee tickets | Workforce analytics |
 |---|---|
-| ![Employee tickets](docs/images/11-my-tickets.png) | ![Workforce analytics](docs/images/12-workforce-analytics.png) |
+| ![Employee tickets](docs/images/07-my-tickets.png) | ![Workforce analytics](docs/images/11-workforce-analytics.png) |
 
 Additional verified screenshots are in [docs/images](docs/images/).
 
@@ -60,7 +61,7 @@ The model can interpret or explain a request. Deterministic backend code remains
 
 ## Authentication and demo access
 
-Hosted users sign in with provisioned synthetic Supabase accounts. Passwords are not published in this repository.
+Hosted users sign in with a provisioned synthetic Supabase account. The portfolio login displays its intentionally public demo credential, and the sidebar selector maps that verified subject only to three server-owned personas in the fixed synthetic tenant.
 
 A secure public-demo path exists in code but is disabled unless all of the following are deliberately configured:
 
@@ -69,7 +70,7 @@ A secure public-demo path exists in code but is disabled unless all of the follo
 3. `ENABLE_PUBLIC_DEMO=true` on a backend connected only to the demo project; and
 4. a frontend using that demo project's publishable key.
 
-The backend accepts persona selection only for a verified Supabase JWT whose `is_anonymous` claim is true. It creates a separate tenant per visitor and derives roles from server-owned employee rows. Cloud activation remains an infrastructure approval step.
+The optional anonymous path accepts only verified anonymous JWTs and creates a separate tenant per visitor. It remains disabled unless a dedicated synthetic-only environment is deliberately configured.
 
 ## Technology
 
@@ -151,7 +152,7 @@ npm.cmd run build
 npm.cmd test
 ```
 
-At deployed commit `b1bd01e`, the recorded deployment gate passed 81 backend tests and 22 Playwright tests. The current local implementation passes 84 backend tests and all 22 Playwright tests. Deterministic tests demonstrate workflow contracts; they are not a benchmark of live Gemini reasoning.
+The current implementation passes 88 backend tests and 23 Playwright tests. Deterministic tests demonstrate workflow contracts; they are not a benchmark of live Gemini reasoning.
 
 GitHub Actions runs backend lint/tests, frontend typecheck/build, tracked-secret pattern checks, and a Playwright suite against an isolated CI PostgreSQL service without production credentials.
 
@@ -168,9 +169,9 @@ GitHub Actions runs backend lint/tests, frontend typecheck/build, tracked-secret
 
 ## Known boundaries
 
-Calendar events are simulated database fixtures. Policy administration is read-only. Public one-click demo access is not active until a separate cloud demo environment is approved and configured. Gemini is optional and free-tier availability is not guaranteed. An authenticated post-`b1bd01e` production Manager browser journey has not been claimed without an authorized session.
+Calendar events are simulated database fixtures. Policy administration is read-only. The provisioned synthetic account supports bounded Employee, Manager, and HR switching; isolated anonymous access remains disabled. Gemini is optional and free-tier availability is not guaranteed.
 
-See [docs/BASELINE_AUDIT.md](docs/BASELINE_AUDIT.md), [docs/DEMO_ARCHITECTURE.md](docs/DEMO_ARCHITECTURE.md), [docs/DEMO_DATA.md](docs/DEMO_DATA.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), and [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
+See [docs/CODEBASE_GUIDE.md](docs/CODEBASE_GUIDE.md), [docs/DEVELOPER_QUICKSTART.md](docs/DEVELOPER_QUICKSTART.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), and [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 
 ## License
 

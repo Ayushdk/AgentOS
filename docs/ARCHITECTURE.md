@@ -1,22 +1,34 @@
-# Architecture and access paths
+﻿# AgentOS architecture
+
+AgentOS uses a modular monolith: one Next.js frontend, one FastAPI backend, one private MCP subprocess, and PostgreSQL. This keeps deployment appropriate for a portfolio project while preserving explicit security and workflow boundaries.
 
 ```mermaid
 flowchart LR
-    UI[Next.js workspaces] --> API[FastAPI auth and ownership checks]
-    API --> G[LangGraph coordinator]
-    G --> P[Policy specialist]
-    G --> W[Workflow specialist]
-    G --> A[Analytics specialist]
-    P & W & A --> C[MCP client]
-    C -->|private stdio| S[FastMCP server]
-    S --> B[Deterministic business services]
-    B --> DB[(PostgreSQL / pgvector)]
-    G --> CP[(checkpoint schema)]
+  UI[Next.js 16 and React 19] -->|JWT or local session| API[FastAPI]
+  API --> AUTH[Supabase verification and server role mapping]
+  API --> GRAPH[LangGraph coordinator]
+  GRAPH --> MCP[MCP client over private stdio]
+  MCP --> TOOLS[FastMCP tools]
+  TOOLS --> DOMAIN[Deterministic services]
+  DOMAIN --> DB[(PostgreSQL)]
+  GRAPH --> CHECKPOINTS[(Checkpoint schema)]
+  DOMAIN --> REPORTING[Restricted reporting views]
 ```
 
-The FastAPI boundary verifies a development-signed session or a Supabase JWT. The employee and role come from `auth_identities` and `employees`; request bodies cannot grant either. The MCP client creates a short-lived purpose-bound token for every call. The MCP server verifies that token independently and invokes the same deterministic services used by tests.
+## Trust boundaries
 
-Operational tables use scoped application queries and transactions. The runtime role owns only AgentOS tables, so ownership bypasses RLS; the application never claims otherwise. Direct browser roles have operational access revoked. The reporting role has read-only access only to the `reporting` schema, a restricted search path, a two-second statement timeout, and aggregate views filtered by transaction-local tenant and period settings.
+- The browser supplies a signed session, never a trusted role or employee ID.
+- FastAPI resolves identity from server-owned mappings and enforces role access.
+- MCP calls use short-lived context tokens and specialist allowlists.
+- Queries include tenant and employee scope where applicable.
+- Employee confirmation and Manager review are separate decisions.
+- Mutations are single-attempt; safe GET requests alone receive bounded retry.
+- Retrieved policy text cannot grant permissions or initiate writes.
 
-LangGraph checkpoints live in a separate `checkpoints` schema. Employee confirmation records the exact payload hash and expiry. Submission happens after the interrupt and is idempotent. Manager review creates a separate server-side approval and locks the employee balance before revalidation and deduction.
+## Runtime behavior
 
+The frontend performs one shared readiness check before authenticated bootstrap requests. Supabase sessions refresh at most once after a 401. A 502/503/504 is treated as availability failure and does not sign the user out or replace data with an empty success state.
+
+LangGraph invokes permission-scoped MCP tools, pauses for human confirmation, and stores checkpoints in PostgreSQL. Optional Gemini inference may phrase grounded responses but cannot bypass backend rules.
+
+See [CODEBASE_GUIDE.md](CODEBASE_GUIDE.md) and [FULL_PROJECT.md](FULL_PROJECT.md).

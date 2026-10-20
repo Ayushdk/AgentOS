@@ -1,16 +1,13 @@
-# 2–3 minute recruiter walkthrough
+﻿# Three-minute AgentOS walkthrough
 
-**0:00–0:25 — Context.** Open the employee workspace. Point out the synthetic-data badge, development/live mode label, private execution-event panel, and employee-scoped balance.
+**0:00–0:25 — Sign in.** Explain that Meridian Ledger and all records are synthetic. Use the provisioned demo account.
 
-**0:25–0:55 — Verifiable policy answer.** Ask “How many annual leave days do I get?” Open the Leave & time away citation. Show document ID, version, effective date, stable section ID, and excerpt. Mention hybrid PostgreSQL full-text plus pgvector retrieval on Supabase.
+**0:25–0:55 — Employee.** Show balance, recent leave, Calendar, and a cited policy answer. Point out complete conversation history.
 
-**0:55–1:40 — Durable leave workflow.** Ask “Check leave November 16–20, 2026.” Show four working days, Meridian Foundation Day excluded, and the simulated planning meeting conflict. Confirm the draft and explain that it is only pending. Switch to the manager identity and approve it separately. Point out the locked balance recheck and idempotent write.
+**0:55–1:25 — Leave.** Prepare a dated request and explain working-day calculation, holiday exclusion, employee confirmation, and separate Manager review. Do not submit during a read-only interview unless the test record is disposable.
 
-**1:40–2:05 — Analytics.** Switch to the HR analyst and open headcount by department. Show the source rows, reporting period, metric definition, and restricted query. Mention that individual leave reasons are absent from reporting views.
+**1:25–1:55 — Manager.** Use the sidebar selector. Show the dedicated overview, approval inbox, team coverage, directory, and calendar without changing a request.
 
-**2:05–2:30 — Human handoff and evidence.** As an employee, ask about home broadband reimbursement. Confirm the handoff, then show the persisted ticket in the HR queue with attempted checks and evidence.
+**1:55–2:25 — HR.** Switch to HR. Show derived overview metrics, tickets, and the approved workforce report.
 
-**2:30–2:50 — Evidence.** Open Execution & evaluation. Show nine discovered MCP tools, the 60-case fixed evaluation artifact, the two-process restart proof, and clearly state that deterministic and live-model results are separate.
-
-If services are sleeping or Gemini quota is unavailable, open Recorded demo. State explicitly that it is playback and makes no live calls.
-
+**2:25–3:00 — Architecture.** Explain Supabase JWT mapping, FastAPI RBAC, LangGraph orchestration, private MCP tools, PostgreSQL checkpoints, and the Render cold-start state. Close with the boundaries in [LIMITATIONS.md](LIMITATIONS.md).
